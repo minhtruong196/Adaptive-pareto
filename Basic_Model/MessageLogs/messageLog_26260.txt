@@ -1,0 +1,3 @@
+12/11/2026 10:56:29 AM : Created file: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\Basic_Model\MessageLogs\messageLog_26260.txt
+12/11/2026 10:56:29 AM : Loaded file: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\Basic_Model.mot
+12/11/2026 10:58:07 AM : Data has been edited.Do you want to save the file before closing? = No

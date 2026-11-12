@@ -1,0 +1,94 @@
+Source: C:\Program Files\AnsysMotorCAD\v252_SP1\Motor-CAD_2025_2_2.exe
+SHA256: 7391800f5b172a77b2927247fab42710cf649ffec875a540278756c6c55d80c3
+UTF-16 strings observed in the installed executable; not yet fresh FEA outputs.
+
+AvTorqueMsVw:
+or through 180 electrical degrees
+AvTorqueMsVw
+Average torque (MsVw)
+The average torque calculated using Maxwell Stress and Virtual Works finite element methods during rotation of rotor through 180 electrical degrees
+AvTorqueDQ
+Average torque (DQ)
+The 
+
+MotorEfficiency:
+ point FEA case
+IMSingleLoadPoint_MotorEfficiency
+Motor Efficiency (FEA on load)
+Efficiency of the motor in the single load point FEA case
+IMSingleLoadPoint_ConverterEfficiency
+Converter Efficiency (FEA on load)
+Efficiency of the converter in the singl
+
+PhasorPowerFactor:
+luding total harmonic distortion
+PhasorPowerFactor
+Power Factor [Phasor]
+Power Factor from phasor diagram
+PhasorPowerFactorAngle
+Power Factor Angle [Phasor]
+Power Factor Angle from phasor diagram
+PhasorLoadAngle
+Load Angle [Phasor]
+
+PhasorRmsPhaseVoltage:
+te the Phasor Power Factor Angle
+PhasorRmsPhaseVoltage
+Phase Terminal Voltage (rms) [Phasor]
+The rms Phase Voltage at the terminals of the machine from phasor diagram
+PhasorRmsPhaseVoltage_D
+Phase Terminal Voltage d-axis (rms) [Phasor]
+PhasorRmsPhaseVo
+
+RMSCurrentDensity:
+for the short circuit calculation
+RMSCurrentDensity
+RMS Current Density
+The rms current density
+RmsCurrentCalc
+The calculated rms line current
+FieldCurrentDensity_Used
+Field Current Density (Used)
+The DC current density in the field conduc
+
+CurrentDefinition:
+ceCalc
+BPMShortCircuitCalc
+CurrentDefinition
+MagneticThermalCoupling
+PhaseAdvance
+PeakCurrent
+Ansys
+Failed to get resistivity properties from database file
+Machine design changed since Lab model built.
+Axial length scaling is not available
+
+Exact-name context:
+MotorEfficiency:
+Motor Efficiency
+Efficiency of motor
+SystemEfficiency
+SystemEfficiency:
+System Efficiency
+Efficiency of system
+ShaftTorque
+RMSCurrentDensity:
+RMS Current Density
+The rms current density
+RmsCurrentCalc
+CurrentDefinition:
+MagneticThermalCoupling
+PhaseAdvance
+PeakCurrent
+CurrentDefinition:
+Current Definition
+Defines whether the current input is rms current, peak current or rms current density
+PhaseAdvance
+PhasorPowerFactor:
+Power Factor [Phasor]
+Power Factor from phasor diagram
+PhasorPowerFactorAngle
+AvTorqueMsVw:
+Average torque (MsVw)
+The average torque calculated using Maxwell Stress and Virtual Works finite element methods during rotation of rotor through 180 electrical degrees
+AvTorqueDQ

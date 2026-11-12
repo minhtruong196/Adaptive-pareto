@@ -1,0 +1,26 @@
+{
+  "fea_calls": 0,
+  "values": {
+    "AvTorqueMsVw": 0,
+    "PhasorPowerFactor": 0,
+    "MotorEfficiency": 0,
+    "SystemEfficiency": 0,
+    "PhasorRmsPhaseVoltage": 0,
+    "ShaftTorque": 0,
+    "ScriptAutoRun": 0,
+    "ScriptAutoRun_PythonClasses": 0,
+    "CurrentDefinition": 2,
+    "RMSCurrentDensity": 7,
+    "OnLoadLossCalculation": false,
+    "BackEMFLossCalculation": false
+  },
+  "errors": {},
+  "geometry_success_and_output": 1,
+  "current_density_perturbation": {
+    "CurrentDefinition": 2,
+    "RMSCurrentDensity": 7,
+    "RMSCurrent": 4.32105033054348,
+    "Ratio_ToothWidth": 0.35,
+    "baseline_RMSCurrent": 4.32105033054348
+  }
+}

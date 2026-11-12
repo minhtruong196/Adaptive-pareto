@@ -1,0 +1,147 @@
+12/11/2026 11:31:53 AM : Created file: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\check\work\designs\1d157f20639147a0b9696d347b9318aa\model\MessageLogs\messageLog_34376.txt
+12/11/2026 11:31:53 AM : pymotorcad: get_variable STATOR_LAM_DIA = 129.772
+12/11/2026 11:31:53 AM : pymotorcad: get_variable STATOR_LAM_LENGTH = 117.839
+12/11/2026 11:31:53 AM : pymotorcad: get_variable ROTOR_LAM_LENGTH = 83.472
+12/11/2026 11:31:53 AM : pymotorcad: get_variable MAGNET_LENGTH = 83.472
+12/11/2026 11:31:53 AM : pymotorcad: get_variable SLOT_NUMBER = 18
+12/11/2026 11:31:53 AM : pymotorcad: get_variable POLE_NUMBER = 4
+12/11/2026 11:31:53 AM : pymotorcad: get_variable MAGTURNSCONDUCTOR = 35
+12/11/2026 11:31:53 AM : pymotorcad: get_variable MAGPHASES = 3
+12/11/2026 11:31:53 AM : pymotorcad: get_variable PARALLELPATHS = 1
+12/11/2026 11:31:53 AM : pymotorcad: get_variable NUMBERSTRANDSHAND = 1
+12/11/2026 11:31:53 AM : pymotorcad: get_variable WINDINGCONNECTION = 0
+12/11/2026 11:31:53 AM : pymotorcad: get_variable NUMBEROFWIRESIZES = 1
+12/11/2026 11:31:53 AM : pymotorcad: get_variable ARMATURE_WINDING_DEFINITION = 2
+12/11/2026 11:31:53 AM : pymotorcad: get_variable REQUESTEDGROSSSLOTFILLFACTOR = 0.4
+12/11/2026 11:31:53 AM : pymotorcad: get_variable REQUESTEDNETSLOTFILLFACTOR = 0.4
+12/11/2026 11:31:53 AM : pymotorcad: get_variable DRIVETYPE_BPM = 0
+12/11/2026 11:31:53 AM : pymotorcad: get_variable SHAFT_SPEED_[RPM] = 1500
+12/11/2026 11:31:53 AM : pymotorcad: get_variable PHASEADVANCE = 0
+12/11/2026 11:31:53 AM : pymotorcad: get_variable DCBUSVOLTAGE = 400
+12/11/2026 11:31:53 AM : pymotorcad: get_variable ONLOADLOSSCALCULATION = False
+12/11/2026 11:31:53 AM : pymotorcad: get_variable BACKEMFLOSSCALCULATION = False
+12/11/2026 11:31:53 AM : pymotorcad: get_variable TORQUECALCULATION = True
+12/11/2026 11:31:53 AM : pymotorcad: get_variable TORQUEPOINTSPERCYCLE = 30
+12/11/2026 11:31:53 AM : pymotorcad: get_variable TORQUENUMBERCYCLES = 1
+12/11/2026 11:31:53 AM : pymotorcad: get_variable GEOMETRYPARAMETERISATION = 1
+12/11/2026 11:31:53 AM : pymotorcad: get_variable SCRIPTAUTORUN = 0
+12/11/2026 11:31:53 AM : pymotorcad: get_variable SCRIPTAUTORUN_PYTHONCLASSES = 0
+12/11/2026 11:31:53 AM : pymotorcad: get_variable CURRENTDEFINITION = 2
+12/11/2026 11:31:53 AM : pymotorcad: get_variable RMSCURRENTDENSITY = 7
+12/11/2026 11:31:53 AM : pymotorcad: set_variable Ratio_Bore = 0.7675
+12/11/2026 11:31:53 AM : pymotorcad: set_variable Ratio_SlotDepth_ParallelTooth = 0.5613
+12/11/2026 11:31:53 AM : pymotorcad: set_variable Ratio_ToothWidth = 0.3472
+12/11/2026 11:31:53 AM : pymotorcad: set_variable Ratio_ShaftD = 0.7765
+12/11/2026 11:31:53 AM : pymotorcad: set_variable Ratio_MagnetArc = 0.9
+12/11/2026 11:31:53 AM : pymotorcad: set_variable Magnet_Thickness = 5
+12/11/2026 11:31:53 AM : pymotorcad: set_variable Slot_Corner_Radius = 0
+12/11/2026 11:31:53 AM : pymotorcad: check_if_geometry_is_valid
+12/11/2026 11:31:54 AM : Geometry check successful.
+12/11/2026 11:31:54 AM : pymotorcad: get_variable STATOR_LAM_DIA = 129.772
+12/11/2026 11:31:54 AM : pymotorcad: get_variable STATOR_LAM_LENGTH = 117.839
+12/11/2026 11:31:54 AM : pymotorcad: get_variable ROTOR_LAM_LENGTH = 83.472
+12/11/2026 11:31:54 AM : pymotorcad: get_variable MAGNET_LENGTH = 83.472
+12/11/2026 11:31:54 AM : pymotorcad: get_variable SLOT_NUMBER = 18
+12/11/2026 11:31:54 AM : pymotorcad: get_variable POLE_NUMBER = 4
+12/11/2026 11:31:54 AM : pymotorcad: get_variable MAGTURNSCONDUCTOR = 35
+12/11/2026 11:31:54 AM : pymotorcad: get_variable MAGPHASES = 3
+12/11/2026 11:31:54 AM : pymotorcad: get_variable PARALLELPATHS = 1
+12/11/2026 11:31:54 AM : pymotorcad: get_variable NUMBERSTRANDSHAND = 1
+12/11/2026 11:31:54 AM : pymotorcad: get_variable WINDINGCONNECTION = 0
+12/11/2026 11:31:54 AM : pymotorcad: get_variable NUMBEROFWIRESIZES = 1
+12/11/2026 11:31:54 AM : pymotorcad: get_variable ARMATURE_WINDING_DEFINITION = 2
+12/11/2026 11:31:54 AM : pymotorcad: get_variable REQUESTEDGROSSSLOTFILLFACTOR = 0.4
+12/11/2026 11:31:54 AM : pymotorcad: get_variable REQUESTEDNETSLOTFILLFACTOR = 0.4
+12/11/2026 11:31:54 AM : pymotorcad: get_variable DRIVETYPE_BPM = 0
+12/11/2026 11:31:54 AM : pymotorcad: get_variable SHAFT_SPEED_[RPM] = 1500
+12/11/2026 11:31:54 AM : pymotorcad: get_variable PHASEADVANCE = 0
+12/11/2026 11:31:54 AM : pymotorcad: get_variable DCBUSVOLTAGE = 400
+12/11/2026 11:31:54 AM : pymotorcad: get_variable ONLOADLOSSCALCULATION = False
+12/11/2026 11:31:54 AM : pymotorcad: get_variable BACKEMFLOSSCALCULATION = False
+12/11/2026 11:31:54 AM : pymotorcad: get_variable TORQUECALCULATION = True
+12/11/2026 11:31:54 AM : pymotorcad: get_variable TORQUEPOINTSPERCYCLE = 30
+12/11/2026 11:31:54 AM : pymotorcad: get_variable TORQUENUMBERCYCLES = 1
+12/11/2026 11:31:54 AM : pymotorcad: get_variable GEOMETRYPARAMETERISATION = 1
+12/11/2026 11:31:54 AM : pymotorcad: get_variable SCRIPTAUTORUN = 0
+12/11/2026 11:31:54 AM : pymotorcad: get_variable SCRIPTAUTORUN_PYTHONCLASSES = 0
+12/11/2026 11:31:54 AM : pymotorcad: get_variable CURRENTDEFINITION = 2
+12/11/2026 11:31:54 AM : pymotorcad: get_variable RMSCURRENTDENSITY = 7
+12/11/2026 11:31:54 AM : pymotorcad: get_variable RATIO_BORE = 0.7675
+12/11/2026 11:31:54 AM : pymotorcad: get_variable RATIO_SLOTDEPTH_PARALLELTOOTH = 0.5613
+12/11/2026 11:31:54 AM : pymotorcad: get_variable RATIO_TOOTHWIDTH = 0.3472
+12/11/2026 11:31:54 AM : pymotorcad: get_variable RATIO_SHAFTD = 0.7765
+12/11/2026 11:31:54 AM : pymotorcad: get_variable RATIO_MAGNETARC = 0.9
+12/11/2026 11:31:54 AM : pymotorcad: get_variable MAGNET_THICKNESS = 5
+12/11/2026 11:31:54 AM : pymotorcad: get_variable SLOT_CORNER_RADIUS = 0
+12/11/2026 11:31:54 AM : pymotorcad: get_variable RMSCURRENTDENSITY = 7
+12/11/2026 11:31:54 AM : pymotorcad: get_variable RMSCURRENT = 4.32105033054348
+12/11/2026 11:31:54 AM : pymotorcad: get_variable PEAKCURRENT = 6.11088798115134
+12/11/2026 11:31:55 AM : pymotorcad: do_magnetic_calculation
+12/11/2026 11:31:55 AM : Creating folder: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\check\work\designs\1d157f20639147a0b9696d347b9318aa\model\FEResultsData\
+12/11/2026 11:31:55 AM : Creating folder: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\check\work\designs\1d157f20639147a0b9696d347b9318aa\model\FEResultsData\feasys\
+12/11/2026 11:31:55 AM : Status: Solving FEA model
+12/11/2026 11:31:56 AM : Q axis current only Point Calculation
+12/11/2026 11:31:56 AM : Solving FEA model
+12/11/2026 11:31:56 AM : Load Point Calculation
+12/11/2026 11:31:57 AM : Solving FEA model
+12/11/2026 11:31:57 AM : Solving FEA model
+12/11/2026 11:31:58 AM : Solving FEA model
+12/11/2026 11:31:58 AM : Transient Torque Calculation
+12/11/2026 11:31:59 AM : Solving FEA model
+12/11/2026 11:32:11 AM : FEA Calculation Time: 14 Seconds
+12/11/2026 11:32:11 AM : Creating folder: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\check\work\designs\1d157f20639147a0b9696d347b9318aa\model\FEResultsData\feasys\
+12/11/2026 11:32:11 AM : Solving completed
+12/11/2026 11:32:11 AM : Creating folder: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\check\work\designs\1d157f20639147a0b9696d347b9318aa\model\Emag\
+12/11/2026 11:32:11 AM : Status: Solving Completed
+12/11/2026 11:32:11 AM : pymotorcad: get_variable STATOR_LAM_DIA = 129.772
+12/11/2026 11:32:11 AM : pymotorcad: get_variable STATOR_LAM_LENGTH = 117.839
+12/11/2026 11:32:11 AM : pymotorcad: get_variable ROTOR_LAM_LENGTH = 83.472
+12/11/2026 11:32:11 AM : pymotorcad: get_variable MAGNET_LENGTH = 83.472
+12/11/2026 11:32:11 AM : pymotorcad: get_variable SLOT_NUMBER = 18
+12/11/2026 11:32:11 AM : pymotorcad: get_variable POLE_NUMBER = 4
+12/11/2026 11:32:12 AM : pymotorcad: get_variable MAGTURNSCONDUCTOR = 35
+12/11/2026 11:32:12 AM : pymotorcad: get_variable MAGPHASES = 3
+12/11/2026 11:32:12 AM : pymotorcad: get_variable PARALLELPATHS = 1
+12/11/2026 11:32:12 AM : pymotorcad: get_variable NUMBERSTRANDSHAND = 1
+12/11/2026 11:32:12 AM : pymotorcad: get_variable WINDINGCONNECTION = 0
+12/11/2026 11:32:12 AM : pymotorcad: get_variable NUMBEROFWIRESIZES = 1
+12/11/2026 11:32:12 AM : pymotorcad: get_variable ARMATURE_WINDING_DEFINITION = 2
+12/11/2026 11:32:12 AM : pymotorcad: get_variable REQUESTEDGROSSSLOTFILLFACTOR = 0.4
+12/11/2026 11:32:12 AM : pymotorcad: get_variable REQUESTEDNETSLOTFILLFACTOR = 0.4
+12/11/2026 11:32:12 AM : pymotorcad: get_variable DRIVETYPE_BPM = 0
+12/11/2026 11:32:12 AM : pymotorcad: get_variable SHAFT_SPEED_[RPM] = 1500
+12/11/2026 11:32:12 AM : pymotorcad: get_variable PHASEADVANCE = 0
+12/11/2026 11:32:12 AM : pymotorcad: get_variable DCBUSVOLTAGE = 400
+12/11/2026 11:32:12 AM : pymotorcad: get_variable ONLOADLOSSCALCULATION = False
+12/11/2026 11:32:12 AM : pymotorcad: get_variable BACKEMFLOSSCALCULATION = False
+12/11/2026 11:32:12 AM : pymotorcad: get_variable TORQUECALCULATION = True
+12/11/2026 11:32:12 AM : pymotorcad: get_variable TORQUEPOINTSPERCYCLE = 30
+12/11/2026 11:32:12 AM : pymotorcad: get_variable TORQUENUMBERCYCLES = 1
+12/11/2026 11:32:12 AM : pymotorcad: get_variable GEOMETRYPARAMETERISATION = 1
+12/11/2026 11:32:12 AM : pymotorcad: get_variable SCRIPTAUTORUN = 0
+12/11/2026 11:32:12 AM : pymotorcad: get_variable SCRIPTAUTORUN_PYTHONCLASSES = 0
+12/11/2026 11:32:12 AM : pymotorcad: get_variable CURRENTDEFINITION = 2
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RMSCURRENTDENSITY = 7
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RATIO_BORE = 0.7675
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RATIO_SLOTDEPTH_PARALLELTOOTH = 0.5613
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RATIO_TOOTHWIDTH = 0.3472
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RATIO_SHAFTD = 0.7765
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RATIO_MAGNETARC = 0.9
+12/11/2026 11:32:12 AM : pymotorcad: get_variable MAGNET_THICKNESS = 5
+12/11/2026 11:32:12 AM : pymotorcad: get_variable SLOT_CORNER_RADIUS = 0
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RMSCURRENTCALC = 4.3214272240336
+12/11/2026 11:32:12 AM : pymotorcad: get_variable COPPER_DIAMETER = 0.886583493073646
+12/11/2026 11:32:12 AM : pymotorcad: get_variable PARALLELPATHS = 1
+12/11/2026 11:32:12 AM : pymotorcad: get_variable NUMBERSTRANDSHAND = 1
+12/11/2026 11:32:12 AM : pymotorcad: get_variable AVTORQUEMSVW = 8.70066939994197
+12/11/2026 11:32:12 AM : pymotorcad: get_variable PHASORPOWERFACTOR = 0.989817602426816
+12/11/2026 11:32:12 AM : pymotorcad: get_variable MOTOREFFICIENCY = 84.5216846555276
+12/11/2026 11:32:12 AM : pymotorcad: get_variable SHAFTTORQUE = 8.45972916507941
+12/11/2026 11:32:12 AM : pymotorcad: get_variable SYSTEMEFFICIENCY = 84.5216846555276
+12/11/2026 11:32:12 AM : pymotorcad: get_variable PHASORRMSPHASEVOLTAGE = 121.095373163296
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RMSCURRENTCALC = 4.3214272240336
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RMSCURRENT = 4.3214272240336
+12/11/2026 11:32:12 AM : pymotorcad: get_variable PEAKCURRENT = 6.11142098903663
+12/11/2026 11:32:12 AM : pymotorcad: get_variable SHAFT_SPEED_[RPM] = 1500
+12/11/2026 11:32:12 AM : pymotorcad: get_variable RMSCURRENTDENSITY = 7
+12/11/2026 11:32:12 AM : pymotorcad: quit

@@ -1,0 +1,26 @@
+12/11/2026 11:22:49 AM : Created file: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\Basic_Model_check\MessageLogs\messageLog_35712.txt
+12/11/2026 11:22:49 AM : Loaded file: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\Basic_Model_check.mot
+12/11/2026 11:22:51 AM : pymotorcad: get_variable AVTORQUEMSVW = 0
+12/11/2026 11:22:51 AM : pymotorcad: get_variable PHASORPOWERFACTOR = 0
+12/11/2026 11:22:51 AM : pymotorcad: get_variable MOTOREFFICIENCY = 0
+12/11/2026 11:22:51 AM : pymotorcad: get_variable SYSTEMEFFICIENCY = 0
+12/11/2026 11:22:51 AM : pymotorcad: get_variable PHASORRMSPHASEVOLTAGE = 0
+12/11/2026 11:22:51 AM : pymotorcad: get_variable SHAFTTORQUE = 0
+12/11/2026 11:22:51 AM : pymotorcad: get_variable SCRIPTAUTORUN = 0
+12/11/2026 11:22:51 AM : pymotorcad: get_variable SCRIPTAUTORUN_PYTHONCLASSES = 0
+12/11/2026 11:22:51 AM : pymotorcad: get_variable CURRENTDEFINITION = 2
+12/11/2026 11:22:51 AM : pymotorcad: get_variable RMSCURRENTDENSITY = 7
+12/11/2026 11:22:51 AM : pymotorcad: get_variable ONLOADLOSSCALCULATION = False
+12/11/2026 11:22:51 AM : pymotorcad: get_variable BACKEMFLOSSCALCULATION = False
+12/11/2026 11:22:51 AM : pymotorcad: check_if_geometry_is_valid
+12/11/2026 11:22:52 AM : Geometry check successful.
+12/11/2026 11:22:52 AM : pymotorcad: get_variable RATIO_TOOTHWIDTH = 0.347198
+12/11/2026 11:22:52 AM : pymotorcad: get_variable RMSCURRENT = 4.32105033054348
+12/11/2026 11:22:52 AM : pymotorcad: set_variable Ratio_ToothWidth = 0.35
+12/11/2026 11:22:52 AM : pymotorcad: get_variable CURRENTDEFINITION = 2
+12/11/2026 11:22:52 AM : pymotorcad: get_variable RMSCURRENTDENSITY = 7
+12/11/2026 11:22:52 AM : pymotorcad: get_variable RMSCURRENT = 4.32105033054348
+12/11/2026 11:22:52 AM : pymotorcad: get_variable RATIO_TOOTHWIDTH = 0.35
+12/11/2026 11:22:52 AM : pymotorcad: load_from_file D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\Basic_Model_check.mot
+12/11/2026 11:22:52 AM : Loaded file: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\inspection\Basic_Model_check.mot
+12/11/2026 11:22:54 AM : pymotorcad: quit

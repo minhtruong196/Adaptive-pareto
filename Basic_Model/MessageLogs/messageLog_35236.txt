@@ -1,0 +1,19 @@
+12/11/2026 1:31:49 PM : Created file: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\Basic_Model\MessageLogs\messageLog_35236.txt
+12/11/2026 1:31:49 PM : Loaded file: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\Basic_Model.mot
+12/11/2026 1:31:58 PM : Creating folder: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\Basic_Model\FEResultsData\
+12/11/2026 1:31:58 PM : Creating folder: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\Basic_Model\FEResultsData\feasys\
+12/11/2026 1:31:58 PM : Status: Solving FEA model
+12/11/2026 1:31:59 PM : Q axis current only Point Calculation
+12/11/2026 1:31:59 PM : Solving FEA model
+12/11/2026 1:32:00 PM : Load Point Calculation
+12/11/2026 1:32:00 PM : Solving FEA model
+12/11/2026 1:32:01 PM : Solving FEA model
+12/11/2026 1:32:01 PM : Solving FEA model
+12/11/2026 1:32:02 PM : Transient Torque Calculation
+12/11/2026 1:32:02 PM : Solving FEA model
+12/11/2026 1:32:16 PM : FEA Calculation Time: 16 Seconds
+12/11/2026 1:32:16 PM : Creating folder: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\Basic_Model\FEResultsData\feasys\
+12/11/2026 1:32:16 PM : Solving completed
+12/11/2026 1:32:16 PM : Creating folder: D:\Minh Tuan\Projects\VS Code\Adaptive Pareto_intermag\Basic_Model\Emag\
+12/11/2026 1:32:16 PM : Status: Solving Completed
+12/11/2026 1:35:06 PM : Data has been edited.Do you want to save the file before closing? = No
