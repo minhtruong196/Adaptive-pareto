@@ -1,0 +1,22 @@
+{
+  "hv_normalization_min": [
+    4.54883620411918,
+    0.884752904222439,
+    79.5612967771118
+  ],
+  "hv_normalization_span": [
+    18.52456735421862,
+    0.11341821372885497,
+    11.529350551225392
+  ],
+  "hv_reference": [
+    1.1,
+    1.1,
+    1.1
+  ],
+  "direct800_reference_hv": 1.14717387351724,
+  "provenance": {
+    "description": "Frozen original SPM calibration; numeric values unchanged during legacy cleanup",
+    "source_sha256": "7c3d43385b1d93ef9e3b66474611ad8ecaeeaa2d0972d799f57ad42a11a36385"
+  }
+}

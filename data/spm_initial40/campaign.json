@@ -1,0 +1,10 @@
+{
+  "fingerprint": "4b2793975b6ec13b91359f8e47601ac87dc7b6aa5f867683955f40dab67dc4df",
+  "sample_count": 40,
+  "seed": 17,
+  "description": "Preserved real initial LHS FEA labels; historical raw solver work removed by user request",
+  "evaluations_sha256": "02d2b8c572031e278c9868ecdd09b3834d24fec4480e93baeaf6fc524207ef74",
+  "source_run_ids": [
+    "eadb80d9-b01c-4544-8bf6-525a9cef5a17"
+  ]
+}

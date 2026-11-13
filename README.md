@@ -1,187 +1,106 @@
 # Motor-CAD: Exploratory DoE và Direct NSGA-II
 
-**File chạy tối ưu chính hiện tại: `nsga2_motorcad.py`**, cấu hình `nsga2_config.json`. Thuật toán pymoo NSGA-II nằm trong file này. `motorcad_optimize.py` giữ phần kết nối, cache và công cụ hỗ trợ DoE/check/analyze; `test_motorcad_optimize.py` chỉ kiểm thử offline.
+Ngày cập nhật: 13/11/2026.
 
-## NSGA-II riêng: chiều dài cố định 100 mm, một license
+## Quyết định hiện tại
 
-**Chạy bằng nút ▶ Run của VS Code:** lưu/đóng Motor-CAD đang mở, mở `nsga2_motorcad.py` rồi chọn Run Python File. Không cần nhập lệnh hoặc tham số. Mỗi lần bấm Run sẽ tạo thư mục mới `runs/nsga2_L100_<ngày_giờ_KST>_<mã>` và bắt đầu tối ưu thật. Đường dẫn hiện trong vùng Output/Terminal của VS Code. File tự dùng Python `.venv` nếu VS Code đang chọn nhầm interpreter; cũng đã thêm cấu hình Run and Debug tên `Run NSGA-II (one hour)`. Không mở đồng thời nhiều lượt Run; khóa một phiên vẫn được áp dụng. Import module không chạy mô phỏng, nhưng thực thi file không tham số hiện đã chủ động chạy NSGA-II theo yêu cầu mới.
+Người dùng chấp nhận kết quả thăm dò hiện tại để chuyển sang model Vernier mới. **Dừng thử nghiệm trên model SPM này; không chạy thêm test, seed, ngân sách hoặc FEA chỉ để cải thiện bảng kết quả.** Đây là quyết định chuyển giai đoạn nghiên cứu, không phải khẳng định phương pháp đã được chứng minh vượt trội trên mọi bài toán.
 
-**Thiết lập mặc định mới cho một lượt khoảng một giờ:** population 24, generations 7, budget tối đa 168 lượt EMag, seed 17, `--max-minutes 55`. Đã qua 25 kiểm thử offline, gồm dừng theo thời gian và resume. Theo duy nhất một điểm đo cũ 20.343 giây/lượt, 168 lượt tương đương khoảng 57 phút; đây là ước tính, chưa đo trên cấu hình 100 mm. Mốc 55 phút tính cả khởi động trong lần gọi hiện tại: ngừng bắt đầu FEA mới, hoàn tất FEA đang chạy rồi lưu Pareto/checkpoint. Không cưỡng bức cắt solver nên không phải cam kết thời hạn cứng; một FEA bất thường có thể kéo dài hơn.
+## Phần đã hoàn thành
 
-Lệnh dùng toàn bộ thiết lập trên:
+- Tự động hóa Motor-CAD, biến rời rạc, kiểm tra J, quản lý cache/FEA records/checkpoint và chạy song song.
+- Direct NSGA-II thực tế 800 FEA, đã được đối chiếu thủ công một số thiết kế trong Motor-CAD.
+- Conventional ANN + NSGA-II; Adaptive Sequential G–G–L–L; Adaptive Alternating G–L–G–L.
+- Hai chiến dịch chính theo quy ước mới: **pool 60 + 20 verification cuối** và **pool 100 + 20 verification cuối**, seed 17. Các FEA trong hai chiến dịch này đều hợp lệ.
+- Báo cáo sai số trung bình/lớn nhất, RMSE/R², FEA archive Pareto, verified-subset Pareto/HV và chi phí. Các run/code/config dành riêng cho budget cũ đã được loại bỏ; chỉ giữ các kết quả chính và dữ liệu nguồn cần thiết.
 
-```powershell
-.\.venv\Scripts\python.exe nsga2_motorcad.py --run-dir runs/nsga2_L100_1h
-```
+## Thuật ngữ và cách đếm đã thực hiện
 
-Đây là một lượt tối ưu trực tiếp theo ngân sách thời gian, không tự khởi chạy các đợt test/DoE hay nhiều seed. Số lượt/thế hệ không chứng minh hội tụ. Các tham số có thể ghi đè trên CLI; khi dùng những ví dụ ngân sách lớn bên dưới, nhớ tăng `--max-minutes` nếu muốn chạy lâu hơn 55 phút. Resume giữ đúng population/generations/seed, giới hạn thời gian áp dụng lại cho từng lần gọi.
+**Pool ANN gồm fitting + validation. Không gọi pool 100 là 100 điểm trực tiếp fit mạng.** Tám điểm validation cố định được dùng chọn checkpoint, không vào gradient fitting hoặc fit scaler. Cả ba phương pháp có cùng kích thước pool/fitting/validation tại cùng một mức.
 
-Theo yêu cầu mới, chọn `Stator_Lam_Length = Rotor_Lam_Length = Magnet_Length = 100 mm`. Giữ đường kính stator 129.772 mm. Chỉ áp dụng trên bản sao; `Basic_Model.mot` giữ nguyên. Ba chiều dài được đặt và kiểm tra lại sau mỗi lần load, không phải biến tối ưu. Fingerprint mới tách kết quả này khỏi lần smoke 8.70 Nm trước đây.
+| Pool cuối | Fitting | Validation | Verification cuối, không train lại | FEA tính ngân sách mỗi phương pháp |
+|---:|---:|---:|---:|---:|
+| 60 | 52 | 8 | 20 | 80 |
+| 100 | 92 | 8 | 20 | 120 |
 
-```powershell
-# Chỉ xem trợ giúp, không FEA:
-.\.venv\Scripts\python.exe nsga2_motorcad.py --help
+Conventional lấy đủ pool từ initial/DoE toàn miền, train một lần. Adaptive train initial và một lần ở mỗi stage. **Sau verification không train lại ngay**; kết quả đó chỉ đi vào training cùng DoE mới ở stage kế tiếp.
 
-# Ví dụ khi chủ động bắt đầu tối ưu, tổng budget 100 lượt gọi EMag:
-.\.venv\Scripts\python.exe nsga2_motorcad.py --population 20 --generations 10 --budget 100 --seed 17 --run-dir runs/nsga2_L100
+| Pool cuối | Initial | DoE bốn stage | Verification trung gian đi vào pool | Pool qua các lần train |
+|---:|---:|---|---:|---|
+| 60 | 20 | 7, 6, 6, 6 | 3 × 5 = 15 | 20 → 27 → 38 → 49 → 60 |
+| 100 | 40 | 12, 11, 11, 11 | 3 × 5 = 15 | 40 → 52 → 68 → 84 → 100 |
 
-# Tiếp tục và tăng tổng budget nếu muốn:
-.\.venv\Scripts\python.exe nsga2_motorcad.py --population 20 --generations 10 --budget 200 --seed 17 --run-dir runs/nsga2_L100 --resume
-```
+Do đó Adaptive pool 60 = **45 initial/DoE + 15 verification cũ**; pool 100 = **85 initial/DoE + 15 verification cũ**. Không cộng verification trung gian hai lần. Verification cuối có 20 thiết kế mới, nằm ngoài toàn bộ pool và không dùng để train lại.
 
-**Không cần chạy DoE hay smoke FEA riêng trước NSGA-II.** Nó kiểm tra tên input/output ngay trong cùng phiên dùng để tối ưu, ghi `startup_check.json`, rồi đánh giá từng ứng viên. Lần FEA đầu tiên là ứng viên NSGA-II, có tính vào budget. Luôn tuần tự: đặt thiết kế → chạy EMag → đọc/lưu kết quả → thiết kế tiếp theo. Không tự chuyển sang song song sau một giờ.
+Initial được dùng chung chính xác trong mỗi chiến dịch, tái sử dụng từ dữ liệu initial đã kiểm chứng fingerprint/LHS. Chiến dịch pool 60 chạy thêm 180 solver calls; pool 100 chạy thêm 240 solver calls. Các initial tái sử dụng vẫn được tính vào ngân sách từng phương pháp. Không dùng bộ Direct800 cho training hoặc adaptive sampling. Nguồn initial nay nằm riêng tại `data/spm_initial20/` và `data/spm_initial40/`; calibration HV cố định tại `data/spm_hv_calibration.json`. CSV nguồn được sao chép nguyên vẹn và đối chiếu SHA256 trước khi xóa run cũ.
 
-**Một license:** lưu và đóng Motor-CAD đang mở trước khi chạy để nhường license cho Python. Nếu phát hiện Motor-CAD đã mở, chương trình báo lỗi trước khi mở thêm; không tự đóng hoặc ghi đè phiên bạn đang chỉnh sửa. Khóa phiên chung ngăn hai run của chương trình tranh license. Nếu máy khác giữ license mạng, vẫn có thể gặp lỗi checkout từ Motor-CAD.
+## Kết quả trên cùng thang HV cố định
 
-Đã qua 21 kiểm thử offline sau thay đổi. **Chưa chạy thêm FEA và chưa có kết quả cho cấu hình 100 mm.**
+Model đã thử là **SPM 18 slots/4 poles**, không phải model Vernier mới. Ba mục tiêu tối đa hóa: average electromagnetic torque `AvTorqueMsVw`, phasor PF `PhasorPowerFactor`, motor efficiency `MotorEfficiency`. Stator diameter 129.772 mm; stator/rotor/magnet lengths 100 mm; J = 7 A/mm²; tốc độ 1500 rpm. Đây là thiết lập của testbed cũ, không mặc định áp sang model mới.
 
-Các phần dưới mô tả công cụ hỗ trợ và lần kiểm chứng trước: DoE/check mặc định dùng `motorcad_config.json`, giữ các chiều dài gốc; NSGA-II (cả file riêng và lệnh tương thích) mặc định dùng `nsga2_config.json`, chiều dài 100 mm. Yêu cầu smoke trước chiến dịch bên dưới chỉ còn áp dụng cho DoE hỗ trợ, không áp dụng cho NSGA-II.
+HV archive dùng mọi điểm FEA thật đã có của phương pháp. HV verification20 chỉ dùng 20 điểm kiểm chứng cuối. Không đưa dự đoán ANN chưa kiểm chứng vào các HV này.
 
-## Cài đặt
+| Pool | Phương pháp | HV archive | HV verification20 |
+|---:|---|---:|---:|
+| 60 | Conventional | 1.050064 | 0.994969 |
+| 60 | Sequential | 1.102307 | 1.095134 |
+| 60 | Alternating | 1.098929 | 1.094071 |
+| 100 | Conventional | 1.086135 | 1.067533 |
+| 100 | Sequential | 1.125000 | 1.097108 |
+| 100 | Alternating | 1.122135 | 1.099679 |
 
-Đã tạo `.venv` trong project, dùng Python 3.9.7 và các phiên bản trong `requirements.txt`. Không sửa Python đi kèm Motor-CAD. Trong PowerShell tại thư mục project:
+**Direct NSGA-II 800 FEA: HV = 1.147174**, là tham chiếu độc lập khác ngân sách, không phải Pareto ground truth.
 
-```powershell
-# Nếu tạo môi trường mới trên máy khác:
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+Tất cả HV trên giữ nguyên calibration của báo cáo 100 FEA ban đầu: objective order Torque/PF/Efficiency; min = `[4.54883620411918, 0.884752904222439, 79.5612967771118]`; span = `[18.52456735421862, 0.11341821372885497, 11.529350551225392]`. Với mục tiêu maximize, `z=(y-min)/span`, `F=1-z`, reference = `[1.1,1.1,1.1]`. Không đổi calibration giữa các dòng hoặc trộn với bảng HV từng dùng calibration khác.
 
-# Kiểm thử offline, không cần license Motor-CAD:
-.\.venv\Scripts\python.exe -m unittest -v
+## Sai số verification20: trung bình và lớn nhất khác nhau
 
-# Trợ giúp, không khởi động Motor-CAD:
-.\.venv\Scripts\python.exe motorcad_optimize.py --help
-```
+Đơn vị dưới đây là sai số tương đối tuyệt đối (%): `100 × abs(ANN − FEA) / abs(FEA)`. Mỗi ô ghi **trung bình / lớn nhất** trên 20 thiết kế mới của phương pháp đó.
 
-Python 3.9 trở lên; đã kiểm thử bằng interpreter nói trên. Sửa `motorcad_exe` trong `motorcad_config.json` nếu vị trí cài đặt khác. Đường dẫn model tương đối được tính từ thư mục chứa config. License Motor-CAD có E-Magnetic phải khả dụng. Trong môi trường Codex này, lần khởi động trong sandbox đã thất bại; các lần kiểm tra thành công được chạy ngoài sandbox. Đây không phải yêu cầu chạy Windows bằng quyền quản trị.
+| Pool | Phương pháp | Torque | PF | Efficiency |
+|---:|---|---:|---:|---:|
+| 60 | Conventional | 16.5929 / 32.4898 | 0.2073 / 0.3700 | 0.9783 / 1.7419 |
+| 60 | Sequential | 12.4408 / 44.2177 | 0.5252 / 2.3646 | 0.7873 / 2.0571 |
+| 60 | Alternating | 6.1224 / 20.7821 | 0.4917 / 1.2642 | 0.5978 / 1.5411 |
+| 100 | Conventional | 9.7819 / 24.4201 | 0.3483 / 1.0337 | 0.6745 / 1.3244 |
+| 100 | Sequential | 2.8286 / 10.5001 | 0.1429 / 0.4159 | 0.1755 / 0.5226 |
+| 100 | Alternating | 2.9524 / 9.6607 | 0.1649 / 0.9771 | 0.2018 / 1.1471 |
 
-## Chạy từng chế độ
+Sequential pool 60 có **sai số torque trung bình thấp hơn Conventional**, dù sai số torque lớn nhất cao hơn. Không dùng outlier để phủ nhận kết quả trung bình; cũng không dùng trung bình để bỏ qua outlier. PF của Adaptive pool 60 có sai số trung bình cao hơn Conventional.
 
-### 1. Check, mặc định không FEA
+## Kết luận được giữ lại
 
-```powershell
-.\.venv\Scripts\python.exe motorcad_optimize.py check
-```
+- Trong các lượt seed 17 này, cả hai Adaptive tìm được tập FEA có HV tốt hơn Conventional ở cùng ngân sách mỗi mức.
+- Ở pool 60, HV verification20 của hai Adaptive cao hơn Conventional khoảng 10%; HV verification20 cũng gần các giá trị tương ứng ở pool 100. Đây là tín hiệu thăm dò về hiệu quả lấy mẫu/tiết kiệm FEA đáng để chuyển sang bài toán động cơ mục tiêu.
+- Chất lượng thiết kế tìm được và độ chính xác ANN là hai tiêu chí riêng. Adaptive không thắng mọi chỉ số dự đoán; đặc biệt pool 60 vẫn có sai số torque lớn tại một số điểm.
+- Tập validation chỉ có 8 điểm và dùng chọn checkpoint; verification20 được chọn trên Pareto riêng của mỗi phương pháp. Chưa có tập test toàn miền chung độc lập hoặc kết quả nhiều seed. Không biến kết quả thăm dò thành tuyên bố vượt trội phổ quát.
+- Không chạy thêm SPM để tìm seed đẹp hoặc làm bảng số liệu thuận lợi hơn. Người dùng quyết định chuyển sang Vernier tại đây.
 
-Mở một instance riêng, copy model vào thư mục làm việc, xác nhận get/set/readback bảy biến, kiểm tra geometry không tự sửa, xác nhận thông số cố định, script autorun tắt, mapping output và điều khiển J. Không chạy script DoE nhúng trong model. Báo cáo: `inspection/check/check_report.json`.
+## Bàn giao sang model Vernier
 
-Đọc output trước FEA chỉ xác nhận tên có thể truy cập; giá trị 0 trong check không phải dữ liệu mô phỏng. Trước khi chạy chiến dịch, thực hiện kiểm tra một thiết kế thật:
+Tái sử dụng phần tự động hóa, cache/checkpoint, ANN và workflow đã chạy. **Không tự động tái sử dụng dữ liệu SPM làm dữ liệu huấn luyện Vernier**, không gộp archive hoặc so raw HV giữa hai động cơ. Model mới cần danh tính/config/fingerprint và thư mục dữ liệu riêng.
 
-```powershell
-.\.venv\Scripts\python.exe motorcad_optimize.py check --smoke-fea
-```
+Trước triển khai model mới cần có file model và định nghĩa biến/ràng buộc/điều kiện vận hành của Vernier. Không mặc định giữ 7 biến, giới hạn, chiều dài 100 mm, cấu hình winding hay công thức kiểm tra J của SPM cho Vernier. Chỉ rà soát những phần phụ thuộc model mới; không mở lại chiến dịch test hoặc FEA SPM. Chưa khởi chạy hoặc sửa model Vernier trong bước chốt tài liệu này.
 
-Lệnh này chỉ cho tối đa **một lần gọi E-Magnetic trong thư mục check**, chọn thiết kế gần baseline sau làm tròn về lưới. Nó giữ nguyên file gốc, vật liệu, số vòng dây, tốc độ, phase advance, dòng theo current-density mode, losses và thermal assumptions. Kết quả lưu ledger/CSV như một run kiểm tra độc lập; không tự đưa vào cache của các thí nghiệm khác. Gọi lại cùng thư mục dùng cache. Nếu lần duy nhất lỗi, dùng thư mục check mới để chủ động thử lại, rồi trỏ `--verification` tới báo cáo mới.
 
-### 2. Exploratory LHS DoE
+## Nơi lưu bằng chứng
 
-```powershell
-# Ví dụ chiến dịch 40 thiết kế; chỉ chạy khi bạn chủ động gọi lệnh:
-.\.venv\Scripts\python.exe motorcad_optimize.py doe --samples 40 --budget 40 --seed 17 --run-dir runs/doe_40
+Các thư mục `runs/` chứa dữ liệu mô phỏng lớn và được giữ trên máy local, không đưa vào Git. README này lưu bảng kết quả tổng hợp; các liên kết báo cáo bên dưới dùng trong workspace local. Mã nguồn, cấu hình, initial CSV và calibration HV trong `data/` được quản lý bằng Git.
 
-# Tiếp tục run, tổng ngân sách vẫn tính từ lúc bắt đầu:
-.\.venv\Scripts\python.exe motorcad_optimize.py doe --samples 40 --budget 40 --seed 17 --run-dir runs/doe_40 --resume
-```
+- [Báo cáo pool60 + verification20](runs/ann_pool60_ver20_seed17/REPORT.md)
+- [Báo cáo pool100 + verification20](runs/ann_pool100_ver20_seed17/REPORT.md)
+- [So sánh pool60–100, cùng calibration](runs/ann_pool60_vs100_ver20_seed17/REPORT.md)
+- [Direct NSGA-II800 summary](runs/nsga2_L100_20261112_130156_685894/summary.json)
+- Các thư mục run lưu `comparison.json`, `correctness_audit.json`, CSV FEA, ANN checkpoint, metrics từng stage, verification từng điểm, log và biểu đồ. Raw files được giữ nguyên để chuyên gia kiểm tra lại.
 
-SciPy Latin Hypercube lấy mẫu trong không gian chỉ số lưới, mỗi mức có cùng độ rộng ô, sau đó loại trùng. Danh sách mẫu được lưu trước mô phỏng. Geometry bị loại trước solver không tiêu budget nên số lần gọi solver có thể ít hơn số mẫu. Khuyến nghị ban đầu 30–50 mẫu; mặc định 40 nhưng không chạy nếu chưa chỉ định mode.
+## Mã và cấu hình đang giữ
 
-### 3. Direct NSGA-II
+- `code/ann_campaign.py`: chương trình Conventional/Adaptive, chỉ giữ quy ước pool + verification cuối riêng.
+- `code/motorcad_optimize.py`: Motor-CAD adapter, cache/ledger, DoE và phân tích kết quả.
+- `code/nsga2_motorcad.py`: Direct NSGA-II.
+- `code/test_*.py`: kiểm thử offline hỗ trợ bảo trì, không tham gia mô phỏng thông thường; không chạy lại trong lần dọn này.
+- `config/ann_pool60_ver20_config.json`, `config/ann_pool100_ver20_config.json`: các cấu hình SPM chính đã thực hiện.
+- `config/motorcad_config.json`, `config/nsga2_config.json`: cấu hình kết nối/model SPM hiện tại.
+- `data/`: initial và calibration HV đã tách khỏi các run budget cũ. Metadata nguồn được giữ để truy xuất.
 
-```powershell
-.\.venv\Scripts\python.exe motorcad_optimize.py nsga2 --population 40 --generations 30 --budget 200 --seed 17 --run-dir runs/nsga2_reference
-
-# Tăng tổng budget và tiếp tục chính run đó:
-.\.venv\Scripts\python.exe motorcad_optimize.py nsga2 --population 40 --generations 30 --budget 400 --seed 17 --run-dir runs/nsga2_reference --resume
-```
-
-Dùng NSGA-II của pymoo 0.6.1.5, SBX/PM với integer rounding repair và duplicate elimination. Ba mục tiêu maximize được đổi dấu nhất quán bên trong pymoo. Mỗi thiết kế mới trực tiếp gọi Motor-CAD; không có mô hình thay thế. Thiết kế lỗi có constraint violation, không có mục tiêu giả trong CSV hoặc Pareto.
-
-`--population >= 4`, `--generations >= 1`. Resume giữ nguyên population/generations/seed; được tăng tổng budget. Checkpoint giữ thuật toán, population/offspring đang dở và trạng thái RNG Python/NumPy. Một thế hệ đang dở được đi lại qua cache để hoàn thành. Không load checkpoint từ nguồn khác: file `.dill` là dữ liệu tuần tự hóa Python có thể thực thi mã khi đọc.
-
-### 4. Phân tích CSV, không Motor-CAD và không FEA
-
-```powershell
-.\.venv\Scripts\python.exe motorcad_optimize.py analyze --csv runs/nsga2_reference/evaluations.csv --out-dir runs/nsga2_reference/analysis
-```
-
-Xuất `pareto.csv`, `objective_pairs.png`, `pareto_3d.png`, `analysis.json`. Chỉ dùng hàng `status=ok` có đủ ba mục tiêu hữu hạn và nằm trong khoảng PF/efficiency hợp lệ. Không nối điểm bằng đường giả vì nondominated set được tính đồng thời trong ba chiều. Nếu chưa có điểm khả thi thì CSV Pareto rỗng và không tạo hình giả. Không so sánh/nối chung dữ liệu khác fingerprint.
-
-Tên Pareto luôn là **Best-known Pareto Reference**, không khẳng định ground truth. Với một điểm thật chỉ vẽ được một điểm, chưa thể kết luận đánh đổi.
-
-## Biến thiết kế và cấu hình được bảo toàn
-
-| Tên | Min | Max | Step |
-|---|---:|---:|---:|
-| Ratio_Bore | 0.5 | 0.8 | 0.0001 |
-| Ratio_SlotDepth_ParallelTooth | 0.5 | 0.8 | 0.0001 |
-| Ratio_ToothWidth | 0.3 | 0.65 | 0.0001 |
-| Ratio_ShaftD | 0.5 | 0.8 | 0.0001 |
-| Ratio_MagnetArc | 0.7 | 0.9 | 0.05 |
-| Magnet_Thickness | 3 | 5 | 0.5 |
-| Slot_Corner_Radius | 0 | 2 | 0.5 |
-
-Các bước được biểu diễn bằng chỉ số nguyên, cache dùng chỉ số nên không bị sai khác float. Với config hỗ trợ gốc `motorcad_config.json`, chiều dài stator là 117.839 mm, rotor/nam châm là 83.472 mm. Với config tối ưu hiện tại `nsga2_config.json`, cả ba chiều dài cố định 100 mm theo yêu cầu mới. Đường kính stator luôn giữ 129.772 mm.
-
-Model có 18 slots / 4 poles, Surface Radial rotor, Parallel Tooth stator, 1500 rpm, `MagTurnsConductor=35`, ba pha. Mỗi thiết kế được load lại từ bản sao sạch ở đường dẫn riêng để không kế thừa input tự sửa hoặc kết quả sidecar của thiết kế trước. Nếu Motor-CAD tự sửa một biến ra khỏi giá trị yêu cầu, chương trình ghi `readback_mismatch` và loại thiết kế thay vì ghi output dưới input sai.
-
-Không thêm constraint điện áp/DC bus vào NSGA-II. `DCBusVoltage=400` và drive gốc được giữ nguyên; điều này không đồng nghĩa bỏ qua mọi hành vi giới hạn điện áp nội bộ của drive. Cần kiểm tra cảnh báo Motor-CAD khi diễn giải kết quả ở miền điện áp cao.
-
-## Ba mục tiêu và output bổ sung
-
-| Cột CSV | Automation parameter | Định nghĩa | Đơn vị |
-|---|---|---|---|
-| average_torque_nm | AvTorqueMsVw | Mô-men điện từ trung bình từ Maxwell Stress và Virtual Work FE | Nm |
-| power_factor | PhasorPowerFactor | PF từ giản đồ phasor; không tự lấy trị tuyệt đối | Không thứ nguyên |
-| efficiency_pct | MotorEfficiency | Hiệu suất motor với mô hình tổn hao gốc | % |
-| shaft_torque_nm | ShaftTorque | Mô-men tại trục, khác mô-men điện từ | Nm |
-| system_efficiency_pct | SystemEfficiency | Hiệu suất hệ thống, lưu riêng với motor efficiency | % |
-| phase_terminal_voltage_rms_v | PhasorRmsPhaseVoltage | Điện áp pha đầu cực RMS từ phasor | V |
-
-Tên và mô tả được đối chiếu từ tài nguyên của executable Motor-CAD 2025.2.2, sau đó kiểm tra `get_variable` trực tiếp. Bằng chứng ở `inspection/automation_name_evidence.txt`, `inspection/parameter_probe.json` và `inspection/check/check_report.json`. Không dùng output IM/Lab thay cho output BPM E-Magnetic.
-
-Tài liệu Ansys: [BPM E-Magnetic Output Data](https://ansyshelp.ansys.com/public/Views/Secured/MotorCAD/v252/en/Motor-CAD_UG/MotorCAD/topics/e-magnetics_bpm_output_data.html), [Power Factor](https://ansyshelp.ansys.com/public/Views/Secured/MotorCAD/v252/en/Motor-CAD_UG/MotorCAD/topics/powerfactor.html), [tìm tên automation](https://ansyshelp.ansys.com/public/Views/Secured/MotorCAD/v252/en/Motor-CAD_UG/MotorCAD/topics/activexinputandoutputparameters.html).
-
-**Giới hạn hiệu suất:** baseline tắt `OnLoadLossCalculation` và `BackEMFLossCalculation`. Chương trình không tự bật thêm các phân tích này. Hiệu suất đọc từ Motor-CAD chỉ có ý nghĩa theo loss model gốc; chưa được xem là hiệu suất có mọi thành phần tổn hao FEA. Muốn thay loss model cần cấu hình/thí nghiệm mới với fingerprint mới, rồi chạy lại check.
-
-## J = 7 A/mm²
-
-Baseline dùng `CurrentDefinition=2`, `RMSCurrentDensity=7`. Chương trình giữ mode và target này, không cố định lại `PeakCurrent` hoặc tự đổi số vòng dây. Dòng có thể được Motor-CAD cập nhật muộn khi tính toán.
-
-Sau mỗi FEA, chương trình kiểm tra thêm J từ `RmsCurrentCalc` và diện tích đồng tròn thực `Copper_Diameter`, với số parallel paths và strands in hand. Công thức áp dụng riêng cho winding sao, một cỡ dây tròn của model này; sai số chấp nhận 0.001 A/mm². Nếu không đọc được hoặc J lệch target, hàng đó bị loại. Các cột `actual_j_a_per_mm2`, `calculated_rms_line_current_a`, `copper_diameter_mm` giúp kiểm tra độc lập. Không tái dùng công thức cho delta, rectangular/litz hoặc mixed wire sizes.
-
-## Dataset, cache, lỗi và ngân sách
-
-Mỗi thư mục run có:
-
-- `manifest.json`: hash model/executable, thư viện, định nghĩa output và config đầy đủ.
-- `evaluations.sqlite`: ledger/cache chính, transaction `FULL synchronous`.
-- `evaluations.csv`: một hàng mỗi lần đánh giá thực tế, gồm cả lỗi.
-- `history.csv`: mọi yêu cầu đã trả kết quả, gồm cache hits và liên kết evaluation ID gốc.
-- `summary.json`: tổng solver attempts, cache hits, trạng thái và thời gian tích lũy.
-- `doe_plan.json` hoặc `nsga2_checkpoint.dill` để resume.
-- `work/`: bản sao model/sidecar theo từng lần chuẩn bị thiết kế; giữ lại để truy vết.
-- `analysis/`: Pareto và biểu đồ từ dữ liệu đã hoàn tất.
-
-CSV gồm `schema_version`, `run_id`, `evaluation_id`, `source`, `generation`, `design_key`, `config_fingerprint`, bảy input, ba mục tiêu, output bổ sung, `status`, `reason`, `fea_started`, thời điểm UTC và thời gian. `readback_json` xác nhận giá trị đặt; ô mục tiêu trống khi lỗi. Các cột bổ sung không đọc được được ghi trong `optional_output_errors`. Phân tích yêu cầu fingerprint không rỗng; hàng khả thi cần schema hỗ trợ và run ID. Khi ghép nhiều run cùng fingerprint, evaluation ID được phân biệt theo run ID. Nếu có manifest cạnh CSV, fingerprint phải khớp. Phân tích rỗng sẽ loại hai PNG kết quả cũ để tránh hiển thị nhầm.
-
-**Budget** là tổng số lần gọi `do_magnetic_calculation()`, gồm thành công, thất bại và gián đoạn. Một lần gọi có thể chứa nhiều FEA sub-solves bên trong Motor-CAD; chương trình không khẳng định đã đếm được từng sub-solve. Geometry bị loại trước solver không tính vào budget. Bộ đếm được ghi bền vững trước khi gọi solver, do đó crash không làm mất ngân sách đã tiêu. `--budget` khi resume là tổng, không phải ngân sách cộng thêm.
-
-Cache nằm trong từng run, có fingerprint model + executable + mapping/config + dependency versions. Không âm thầm dùng cache từ chiến dịch tham chiếu cho baseline cùng budget. Để so sánh ANN sau này, tạo run độc lập với cùng định nghĩa ngân sách; cache chia sẻ cần một protocol riêng.
-
-Sau gián đoạn, attempt đang `started` thành `interrupted`, vẫn tính budget và không có objective. Mặc định không retry thiết kế lỗi. `--retry-failed` cho thử lại mỗi thiết kế lỗi tạm thời/gián đoạn tối đa một lần trong lần gọi chương trình, không ghi đè lịch sử; mỗi lần thực gọi solver tiêu thêm budget. Lỗi khi gọi hàm kiểm tra geometry được ghi `geometry_check_failed` và cho phép retry rõ ràng vì có thể do RPC/license thay vì hình học. Invariant/readback lỗi xác định được cache, không retry tự động.
-
-Chỉ một writer trên mỗi thư mục run. Không xóa hoặc sửa SQLite/checkpoint trong lúc chạy. Nếu dừng bằng Ctrl+C, dữ liệu đã hoàn tất được lưu; lần solver đang dở có thể không khôi phục được và cần retry rõ ràng.
-
-## Tái sử dụng code cũ
-
-Tái sử dụng thư viện PyMotorCAD, bảy tên biến và trình tự `set_variable` → `do_magnetic_calculation` → `get_variable` từ script Python nhúng trong `.mot`. Script bên ngoài được dùng để tham khảo cách gọi E-Magnetic và đọc ShaftTorque.
-
-Không chạy nguyên bản script bên ngoài vì nó đổi 24 rãnh, vật liệu, tốc độ, dòng, phase advance và bus voltage. Không chỉnh script nhúng vì nó thay 11 input, chỉ lấy ShaftTorque, ghi đè CSV và có thể tiếp tục khi thiếu input. Các lỗi này được xử lý trong chương trình mới; hai script nguồn và file .mot/.bak giữ nguyên.
-
-## Những điểm cần kiểm chứng thêm trước kết luận nghiên cứu
-
-Một smoke FEA chỉ xác nhận luồng tại một thiết kế, không chứng minh toàn miền hình học khả thi. Cần đánh giá loss model/độ hội tụ mesh/time steps, nội dung tổn hao motor so với system, ảnh hưởng độ dài magnetic hiệu dụng, và hành vi điện áp của drive trên các ứng viên Pareto. Chương trình giữ cấu hình gốc và lưu lý do lỗi; nó không tự đưa ra giả định vật lý để lấp những khoảng này.
-
-Công thức kiểm tra J độc lập hiện được khóa với hash của chính `Basic_Model.mot` được cung cấp. Nếu thay baseline, cần kiểm chứng lại loại dây/connection và công thức rồi điều chỉnh `validate_j_scope`; chương trình sẽ báo lỗi rõ ràng khi model khác hash. Đây là giới hạn có chủ ý để tránh áp nhầm công thức cho cấu hình dây khác.
-
-Đã chạy đúng một thiết kế thật thành công, cùng 18 kiểm thử offline. Kết quả smoke và biểu đồ nằm trong `inspection/check/`; bản ghi kiểm chứng ở `inspection/VALIDATION.md`. Pymoo 0.6.1.5 có cảnh báo deprecation `np.row_stack` với NumPy 2; cảnh báo không làm các kiểm thử thất bại.
+Các đường dẫn cấu hình và manifest của hai run chính đã chuyển sang nguồn `data/`; `cleanup_migration.json` ghi nhận việc chuyển đường dẫn. Không thay đổi FEA CSV, ANN checkpoint hay giá trị metrics của các run chính. Đây không phải cấu hình Vernier mới; chỉ tiếp tục triển khai khi có model Vernier.

@@ -2,3 +2,14 @@
 __pycache__/
 runs/
 *.tmp
+
+# Motor-CAD generated solver files and local inspection output.
+/Basic_Model/
+/inspection/
+
+# Local credentials and editor/OS scratch files.
+.env
+.env.*
+!.env.example
+Thumbs.db
+.DS_Store

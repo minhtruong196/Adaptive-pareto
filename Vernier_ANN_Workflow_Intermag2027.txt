@@ -1,0 +1,550 @@
+VERNIER MOTOR — ADAPTIVE ANN / FEA / PARETO
+CONTEXT ĐÃ CHỐT (V1, cập nhật 12/11/2026)
+
+MỤC ĐÍCH
+Tài liệu để mở lại cuộc thảo luận và triển khai nghiên cứu; chỉ lưu quyết định
+đã chốt, các vấn đề cốt lõi, cách xử lý và những khả năng dự phòng quan trọng.
+Đây là WORKFLOW TỰ THIẾT KẾ, không phải bản sao chính xác của Barri 2025.
+
+====================================================================
+1. ĐỀ TÀI VÀ MỤC TIÊU
+====================================================================
+- Động cơ: Dual-Stator Spoke-Type Vernier Motor (dual airgap).
+- Ba mục tiêu tối ưu: Average Torque, Power Factor (PF), Efficiency.
+- Công cụ V1: FEA tạo dữ liệu thực; ANN surrogate dự đoán nhanh;
+  NSGA-II (ưu tiên pymoo) tìm Pareto. APA Barri chỉ là tham khảo.
+- Ý tưởng: lấy mẫu FEA thích nghi bằng Global / Local Infill, kiểm chứng
+  Pareto theo quy tắc, tái sử dụng FEA và chỉ train ANN một lần mỗi giai đoạn.
+- KHÔNG cần chứng minh tốt hơn Barri. Cần kiểm chứng hiệu quả so với
+  conventional ANN optimization (không adaptive) và nếu khả thi direct FEA
+  optimization. Chưa khẳng định tốt hơn khi chưa có dữ liệu thí nghiệm.
+
+====================================================================
+2. HAI WORKFLOW ĐƯỢC CHỐT
+====================================================================
+A — SEQUENTIAL:    INITIAL -> G1 -> G2 -> L1 -> L2 -> FINAL
+B — ALTERNATING:   INITIAL -> G1 -> L1 -> G2 -> L2 -> FINAL
+
+- G = Global Infill; L = Local Infill.
+- Hai cách dùng CHUNG initial DoE, phương pháp ANN/NSGA-II, ngân sách FEA,
+  quy tắc Verification và cách train. Chỉ đổi THỨ TỰ Global / Local.
+- Mỗi cách có 2 Global + 2 Local, dùng để so sánh trong paper.
+
+====================================================================
+3. QUY TRÌNH CHUNG CỦA MỘT GIAI ĐOẠN
+====================================================================
+INITIAL:
+  N DoE ban đầu -> FEA -> train ANN -> ANN + NSGA-II -> Pareto dự đoán P0.
+
+MỖI GLOBAL HOẶC LOCAL (V1):
+  1) Từ Pareto DẪN HƯỚNG hiện tại -> xác định miền DoE mới.
+  2) Tạo DoE mới -> chạy FEA.
+  3) GỘP tất cả dữ liệu FEA đã có: initial + mọi DoE cũ + các điểm
+     Verification cũ + DoE mới; chỉ TRAIN ANN MỘT LẦN trong giai đoạn.
+  4) ANN mới + NSGA-II -> Pareto dự đoán mới.
+  5) Chọn tối đa 5 nghiệm đại diện từ Pareto -> FEA Verification.
+  6) Ghi kết quả FEA, so sánh ANN/FEA, hiệu chỉnh tập Pareto DẪN HƯỚNG
+     tại các ứng viên đã được kiểm chứng.
+  7) KHÔNG train ngay sau Verification. Dựa vào Pareto đã hiệu chỉnh
+     để tạo DoE của giai đoạn kế tiếp; khi FEA DoE mới xong mới gộp
+     tất cả và train một lần.
+
+VÍ DỤ G1 -> L1:
+  G1 -> Verify 5 điểm -> hiệu chỉnh Pareto -> chọn Local DoE -> FEA Local
+  -> gộp Local DoE + 5 FEA G1 + data lịch sử -> TRAIN ANN -> NSGA-II -> ...
+
+Tất cả FEA được giữ lại kể cả điểm không còn thuộc Pareto; không mô phỏng
+trùng thiết kế đã có kết quả. Sau giai đoạn cuối, báo cáo kết quả FEA
+kiểm chứng; KHÔNG gọi cả Pareto ANN là Pareto được FEA xác nhận.
+
+====================================================================
+4. GLOBAL KHÁC LOCAL Ở ĐÂU?
+====================================================================
+GLOBAL:
+  Dùng TOÀN BỘ tập Pareto dẫn hướng hiện tại. Với từng design variable,
+  lấy min/max trên toàn tập -> miền biến (hyperrectangle) -> Global DoE.
+
+LOCAL:
+  Chia Pareto thành nhiều nhóm Sub-Pareto. Lấy min/max design variables
+  cho TỪNG NHÓM -> nhiều miền nhỏ -> Local DoE gần các vùng Pareto.
+
+- Global và Local có thể dùng CHUNG các biến hình học; khác nhau ở cách
+  chọn miền lấy mẫu, không phải khác tập biến.
+- Với G1 -> L1 -> G2: Global 2 dựa trên TOÀN BỘ Pareto đã cập nhật,
+  không chỉ lấy một vùng của Local 1. KHÔNG bắt buộc miền Global 2
+  rộng hơn Global 1; có thể tiếp tục thu hẹp theo Pareto mới.
+- Rủi ro cần đo: thu hẹp quá sớm khi Pareto chưa đủ bao phủ có thể
+  khiến bỏ lỡ các vùng tốt chưa tìm thấy.
+
+====================================================================
+5. CHỌN TỐI ĐA 5 ĐIỂM FEA VERIFICATION (KHÔNG RANDOM)
+====================================================================
+Chọn từ Pareto dự đoán của mỗi giai đoạn:
+  P1 = nghiệm có Torque cao nhất.
+  P2 = nghiệm có PF cao nhất.
+  P3 = nghiệm có Efficiency cao nhất.
+  P4 = Maximin: xa nhất so với điểm đã chọn gần nhất, trong không gian
+       (Torque, PF, Efficiency) đã CHUẨN HÓA.
+  P5 = Maximin tiếp theo sau khi có P4.
+
+- Tránh chọn trùng; nếu các nghiệm cực trị trùng nhau thì bổ sung theo
+  Maximin để đủ số lượng ứng viên khác nhau.
+- Nếu Pareto có ÍT HƠN 5 nghiệm: kiểm chứng TẤT CẢ.
+- Điểm đã chạy FEA thì tái sử dụng, không chạy lại.
+- Con số 5 là quy tắc thử nghiệm V1, KHÔNG phải yêu cầu của Barri
+  và KHÔNG bảo đảm toàn bộ Pareto dự đoán chính xác.
+
+====================================================================
+6. VERIFICATION, HIỆU CHỈNH PARETO, LỖI ANN
+====================================================================
+- Verification: so sánh 5 nghiệm ANN với FEA thật; ghi nhận giá trị
+  Torque/PF/Efficiency đúng cho chính các nghiệm này.
+- Xem xét ràng buộc, Pareto dominance và điều chỉnh TẬP DẪN HƯỚNG
+  tạo DoE mới: điểm được FEA xác nhận là bị trội/không hợp lệ có thể loại.
+- Điểm sai số lớn KHÔNG tự động đồng nghĩa bị trội: có thể vẫn có PF hay
+  Efficiency tốt. Các ứng viên CHƯA kiểm chứng vẫn chỉ là dự đoán.
+- Vì DoE mới được tạo từ tập dẫn hướng đã hiệu chỉnh, không bắt buộc
+  train ANN ngay sau Verification chỉ để sửa thông tin về 5 điểm ấy.
+- Tuy nhiên, việc sửa 5 điểm KHÔNG sửa toàn bộ ANN; đây là đánh đổi
+  để giảm số lần train, cần xem kết quả thí nghiệm.
+
+DỰ PHÒNG (CHƯA ÁP DỤNG TỰ ĐỘNG TRONG V1):
+  Nếu mô hình/thuật toán dự đoán sai QUÁ CAO khi chạy thử, có thể cân nhắc
+  loại ứng viên khỏi Pareto DẪN HƯỚNG chỉ vì độ sai lệch quá lớn,
+  kể cả khi chưa xác nhận nó bị trội; nghiên cứu ngưỡng và cách xử lý SAU.
+  KHÔNG khóa nguyên tắc 'chỉ được loại khi FEA xác nhận bị trội'.
+  Dù loại khỏi Pareto dẫn hướng, vẫn giữ dữ liệu FEA để train sau này.
+  Hiện KHÔNG chốt ngưỡng 3%, 10% hay ngưỡng bất kỳ.
+
+====================================================================
+7. THAM KHẢO PAPER: CÁI GÌ RÕ, CÁI GÌ CHƯA RÕ
+====================================================================
+BARRI ET AL. 2025 — 'Optimal Design of Traction Electric Motors by a
+New Adaptive Pareto Algorithm' (IEEE Transactions on Vehicular Technology)
+  - Fig. 8: Initial -> Global Infill -> Local Infill -> Final; Global và
+    Local đều có Motor-CAD Verification; thấy vòng lặp ngoài Global,
+    không thấy quy định rõ vòng lặp ngoài Local.
+  - APA nội bộ có design-variable space reduction, local Pareto set
+    infill, uniformisation. Phân biệt các BƯỚC APA với GIAI ĐOẠN Global/Local
+    cải thiện ANN. Uniformisation CHƯA nằm trong V1 của chúng ta.
+  - Global improvement: thêm mẫu để cải thiện ANN trên miền thiết kế rộng;
+    Local improvement: thêm mẫu gần Pareto.
+  - Sau Local, ANN cho 782 nghiệm Pareto; Sharing Function chia không gian
+    mục tiêu chuẩn hóa thành các ô cạnh 0.05 và giữ một nghiệm đại diện
+    mỗi ô để giảm Motor-CAD; Pareto cuối có 60 motor.
+  - KHÔNG nói rõ số điểm FEA Verification từng vòng, các FEA Verification
+    có nạp lại training không, lịch retrain chính xác, số vòng Local.
+  - Cách thu hẹp theo Pareto của ta rất gần ý tưởng APA. KHÔNG khẳng định
+    Global DoE của Barri khác ta vì mô tả bài chưa đủ chi tiết.
+  - Khác biệt NHÓM LÀM RÕ: 5 điểm extremes+Maximin; dùng Verification
+    hiệu chỉnh Pareto dẫn hướng; FEA tích lũy, train 1 lần/giai đoạn;
+    hai thứ tự stage xác định rõ và so sánh có kiểm soát.
+
+YAN ET AL. ECCE 2025 — 'Optimal Design of Electric Machines Based on
+Surrogate Model with Active Learning'
+  - Initial 120 FEA; MC Dropout chọn 1 điểm bất định cao -> FEA -> thêm data
+    -> train ANN lại từ đầu; lặp cho đến tổng 796 FEA, R² >= 0.95.
+  - Sau ANN + NSGA-II, bài trình bày FEA final verification cho 1 thiết kế
+    tối ưu được chọn. Workflow ta KHÔNG áp dụng retrain mỗi 1 điểm.
+
+====================================================================
+8. CÂU HỎI NGHIÊN CỨU VÀ BƯỚC TIẾP THEO
+====================================================================
+Cần kiểm tra thực nghiệm:
+  - Với cùng số FEA, G-G-L-L hay G-L-G-L cho tập Pareto tốt hơn?
+  - Cải thiện so với conventional ANN không adaptive như thế nào?
+  - Chi phí thời gian, số FEA, độ chính xác Torque/PF/Efficiency và
+    chất lượng Pareto (ví dụ Hypervolume dựa trên FEA xác nhận).
+  - Nếu khả thi, thêm baseline tối ưu FEA trực tiếp; so sánh công bằng.
+
+CHƯA CHỐT (KHÔNG ĐƯỢC MẶC ĐỊNH LÀ QUYẾT ĐỊNH):
+  - Số N Initial, số DoE từng giai đoạn, cách chia Sub-Pareto, seed,
+    các ngưỡng, điều kiện dừng ngoài 4 stage, chi tiết code triển khai.
+  - Bộ lọc ứng viên có sai số ANN cực lớn: chỉ nghiên cứu nếu cần (V2).
+
+NEXT:
+  1) Chạy ổn FEA tham số hóa -> ANN -> NSGA-II (ưu tiên pymoo).
+     NSGA-II KHÔNG phải APA. Nếu triển khai APA sau này, cần ghi rõ các bước tự
+     định nghĩa do Barri chưa đủ chi tiết để replicate tuyệt đối.
+  2) Cài Global/Local DoE, 5-point Verification, quản lý dataset tích lũy.
+  3) Chạy hai lịch 4 stage với FEA budget giống nhau.
+  4) So sánh Pareto, sai số ANN, HV và thời gian với baselines.
+
+====================================================================
+9. CẬP NHẬT SAU KHI CHỐT V1 — IMPLEMENTATION & UNIFORMISATION
+====================================================================
+KHẢ NĂNG CODE:
+  - Không bắt buộc MATLAB; Python đủ để triển khai DoE, ANN, tìm Pareto,
+    Global/Local Infill, Verification 5 điểm, quản lý dữ liệu và cả hai
+    lịch G-G-L-L / G-L-G-L.
+  - Ưu tiên thư viện có sẵn (SciPy cho DoE, scikit-learn/PyTorch cho ANN,
+    pymoo cho NSGA-II hoặc thuật toán Pareto phù hợp). Phần điều phối,
+    cách thu hẹp miền, chia Sub-Pareto và kiểm chứng phải viết/kiểm thử.
+  - User đã có nhiều code tự động hóa ANSYS/Altair Flux; chưa cần lo lại
+    phần điều khiển FEA. Mục tiêu là triển khai chạy được, có kết quả FEA
+    đáng tin, KHÔNG bắt buộc replicate APA Barri chính xác 100%.
+  - Nếu dùng NSGA-II thay APA thì phải gọi đúng là NSGA-II, không đánh
+    đồng; khi cần có thể tự xây dựng thuật toán dựa trên ý tưởng Barri,
+    định nghĩa rõ chi tiết thiếu và kiểm tra trên bài toán thử.
+
+UNIFORMISATION — TẠM HOÃN, KHÔNG ĐƯA VÀO V1:
+  - Trong APA gốc, đây là bước nội bộ để tìm/bổ sung NGHIỆM MỚI tại các
+    khoảng Pareto còn thưa, nhằm phân bố Pareto đồng đều hơn.
+  - Khác Verification Maximin 5 điểm: Verification CHỌN nghiệm đã có
+    để chạy FEA, còn Uniformisation CHỦ ĐỘNG tìm thêm nghiệm tại vùng
+    Pareto thưa (có thể kéo theo thêm chi phí tính toán/FEA).
+  - Hai workflow V1 giữ nguyên, CHƯA thêm bước Uniformisation.
+  - NẾU Pareto thu được THƯA, CÓ KHOẢNG TRỐNG LỚN hoặc phân bố rất
+    không đồng đều: nhớ cân nhắc đưa Uniformisation vào phiên bản sau.
+    Đánh giá bằng chỉ số phân bố/khoảng cách trên không gian mục tiêu
+    chuẩn hóa; không chỉ nhìn bằng mắt.
+  - Nếu đưa vào so sánh, phải kiểm soát số FEA/tổng ngân sách giữa các
+    phương án; chưa khẳng định sẽ giúp cải thiện chất lượng Pareto.
+  - Không cần coi Uniformisation là giai đoạn riêng sau Local; trong
+    Barri, nó nằm trong cấu trúc APA.
+
+CHỐT: Không tiếp tục đổi workflow theo suy đoán; tập trung triển khai
+và chỉ chỉnh khi số liệu thực nghiệm cho thấy vấn đề.
+
+====================================================================
+10. VẤN ĐỀ MỚI: FIG. 1 / FIG. 8 / TABLE VI CỦA BARRI
+    (thảo luận ngày 11/11/2026; CHƯA có kết luận chắc về code tác giả)
+====================================================================
+VẤN ĐỀ NGƯỜI DÙNG PHÁT HIỆN — "LOCAL LỒNG LOCAL":
+  - Section II-B + Fig. 1 định nghĩa APA gồm 3 BƯỚC TUẦN TỰ:
+    (i) Design Variable Space Reduction;
+    (ii) Local Pareto Set Infill (chia Pareto thành sub-Pareto để lấy
+         thêm điểm trong các miền DV của từng nhóm);
+    (iii) Uniformisation (làm dày/đồng đều phân bố Pareto).
+  - Fig. 8 lại có hai GIAI ĐOẠN bên ngoài: Global Infill và Local Infill,
+    mỗi giai đoạn đều chứa ô "APA application with ANN".
+  - Section III-G3 nói Local Infill (giai đoạn ngoài) dùng APA để DẪN
+    HƯỚNG lấy mẫu mới gần Pareto nhằm cải thiện ANN bằng FEA bổ sung.
+  - Nếu hiểu MỌI lời gọi APA ở Fig. 8 đều chạy ĐỦ ba bước Fig. 1:
+      Local Infill ngoài: lấy mẫu gần Pareto theo APA -> FEA -> cập nhật
+      ANN -> gọi APA, trong APA lại có "Local Pareto Set Infill".
+    Đó là hiệu ứng "Local lồng Local"/kỹ thuật lấy mẫu có vẻ lặp,
+    gần giống đệ quy về mặt sơ đồ (KHÔNG phải đệ quy lập trình).
+    Người dùng cho rằng đây là điểm chồng chéo khó hiểu, và nhận xét
+    này nhất quán với cách ghép trực tiếp hai sơ đồ.
+
+TABLE VI — CHỖ DỄ GÂY NHẦM:
+  - Đúng tiêu đề bảng: "ELECTRIC MOTOR OPTIMISATION APA TUNING PARAMETERS
+    - LOCAL INFILL STEP" (trang PDF 11/17; in trên giấy 8900).
+  - Tham số "Number of reductions = 2" nói về số bước Design Variable
+    Space Reduction trong cấu hình APA được báo cáo ở Local Infill.
+  - Bảng cũng chứa tham số của các thao tác Local Pareto Set Infill và
+    Uniformisation, chứ không chỉ Space Reduction.
+  - KHÔNG ĐƯỢC suy từ "2 reductions" ra chắc chắn "2 vòng Global",
+    "train ANN 2 lần" hoặc "không thể train ANN >2 lần". Không có
+    ánh xạ 1-1 reduction -> global iteration -> ANN retrain được công bố.
+
+CÁC CÁCH HIỂU ĐÃ ĐƯỢC THẢO LUẬN (GIẢ THUYẾT, KHÔNG PHẢI SỰ THẬT):
+  A) APA vẫn gồm đủ 3 bước khi được gọi trong cả Global và Local ngoài.
+     Local bên trong tìm nghiệm bằng ANN; Local ngoài tập trung bổ sung
+     FEA nhằm cải thiện ANN. Có thể không thừa về chức năng, nhưng cách
+     liên kết/lặp lại kỹ thuật phân nhóm không được mô tả rõ.
+  B) Tác giả điều chỉnh APA khi áp dụng cho động cơ; lời gọi "APA" không
+     nhất thiết kích hoạt đủ 3 bước, hoặc các bước được phân bổ theo
+     giai đoạn ngoài. Cách hiểu này có thể giải quyết sự chồng chéo,
+     NHƯNG Fig. 1 nằm ở mục ĐỊNH NGHĨA APA (Section II-B), không chỉ
+     là ví dụ Viennet (Section II-C). Table VI mang tên Local Infill mà
+     vẫn liệt kê thông số của nhiều bước APA, gây mâu thuẫn khi cố ánh
+     xạ thẳng ba bước APA sang Global -> Local -> Uniformisation.
+  C) Biến thể cụ thể của B: nếu một bước Space Reduction ứng với đúng
+     một vòng Global và đúng một lần cập nhật ANN, thì "2 reductions"
+     SẼ dẫn tới 2 lần train lại trong Global. Đây là một workflow GIẢ
+     ĐỊNH có thể triển khai về mặt thuật toán, nhưng Table VI là bảng
+     của Local Infill, không chứng minh giả định ánh xạ 1-1 đó.
+
+NHỮNG ĐIỀU BÀI BÁO KHÔNG CHỐT RÕ:
+  - Mỗi ô "APA application" ở Fig. 8 có luôn chạy đủ cả ba bước không?
+  - Local Infill dùng lại vùng/sub-Pareto do APA đã xác định hay thực
+    hiện một lần phân nhóm mới độc lập?
+  - Số vòng Global thực tế và số lần cập nhật/huấn luyện lại ANN?
+  - Quan hệ thời gian cụ thể giữa giảm miền DV, thêm FEA, verification,
+    retrain và thao tác Local nội bộ APA?
+  => Không thể suy chính xác implementation, không được biến giả
+     thuyết thành quy trình "đúng của Barri".
+
+QUAN ĐIỂM ĐÃ CHỐT SAU TRANH LUẬN:
+  - Có cơ sở phê bình bài Barri MÔ TẢ CHƯA ĐỦ RÕ để tái lập chính xác
+    cách lồng APA vào Global/Local. KHÔNG suy ra code hay bản thân thuật
+    toán của tác giả chắc chắn sai hoặc chạy thừa.
+  - Người dùng nghiêng về khả năng APA đã được biến tấu (B/C), nhưng
+    KHÔNG khẳng định điều đó đúng; đã xem nhiều cách giải thích có thể.
+  - Không tiếp tục mất thời gian "giải mã" số lần train hoặc cách lồng
+    Local của Barri từ những thông tin không đầy đủ.
+  - Tuyệt đối KHÔNG vì các giả thuyết này mà sửa workflow của chúng ta.
+  - WORKFLOW RIÊNG giữ nguyên: Initial -> hai Global + hai Local;
+    so sánh G-G-L-L và G-L-G-L, FEA Verification tối đa 5 điểm/vòng,
+    gộp FEA lịch sử và train ANN một lần mỗi stage; không triển khai
+    bắt buộc đầy đủ APA 3 bước hay "Local lồng Local". Nếu dùng
+    NSGA-II/pymoo làm tối ưu Pareto thì ghi đúng tên, không gán là APA.
+  - Chỉ vay mượn NGUYÊN LÝ của Barri: Global cải thiện độ bao phủ/độ
+    chính xác surrogate, Local tập trung gần Pareto, dùng FEA bổ sung
+    để cập nhật ANN; Uniformisation tạm hoãn ở V1.
+  - Ưu tiên code chạy, số FEA, sai số ANN, Pareto FEA kiểm chứng và
+    so sánh công bằng; phương pháp riêng phải mô tả rõ từng vòng,
+    dữ liệu huấn luyện, cơ chế lựa chọn DoE và thời điểm retrain.
+
+LƯU Ý CHO TRỢ LÝ LẦN SAU:
+  Không tự động cho rằng "2 DV reductions = 2 ANN retrains", cũng
+  không khẳng định "APA chắc chắn chạy đầy đủ ba bước ở mọi ô Fig. 8".
+  Nếu được hỏi về Barri: tách rõ PAPER NÓI / GIẢ THUYẾT / WORKFLOW TA.
+  Tránh lặp lại kiểu suy luận quá tự tin đã gây mất thời gian ở buổi
+  thảo luận 11/11/2026.
+
+
+====================================================================
+11. KẾT QUẢ PROOF-OF-CONCEPT VIENNET (THỬ NGHIỆM 12/11/2026)
+====================================================================
+TRẠNG THÁI: ĐÃ CÓ SỐ LIỆU THỬ NGHIỆM TRÊN BENCHMARK TOÁN,
+CHƯA có số liệu xác nhận ưu thế trên VERNIER MOTOR/FEA 2D/3D.
+Không biến kết quả sơ bộ thành tuyên bố thuật toán chắc chắn tốt hơn.
+
+BÀI TOÁN VÀ CODE:
+  - Viennet: 2 biến x1,x2 trong [-3,3]^2; 3 hàm mục tiêu f1,f2,f3
+    đều tối thiểu hóa. KHÔNG phải Torque/PF/Efficiency của motor.
+  - Bộ tối ưu: NSGA-II tối giản tự viết để chạy nhanh; CHƯA phải pymoo.
+  - ANN: sklearn MLPRegressor hai hidden layer (24,24), tanh,
+    solver lbfgs; đầu ra chuẩn hóa khi train.
+  - Hai lịch: Sequential = G-G-L-L, Alternating = G-L-G-L.
+  - Verification: chọn tối đa 5 điểm Pareto mỗi vòng; lấy 3 cực trị
+    mục tiêu + 2 Maximin trong không gian MỤC TIÊU chuẩn hóa.
+  - Các điểm Verification được đưa vào dataset để train ở VÒNG SAU,
+    không train ngay sau Verification vòng hiện tại.
+  - Khi chia Local DoE trong CODE THỬ: sắp xếp Pareto theo f1 rồi chia
+    thành 4 nhóm, dùng bounds DV mỗi nhóm. Code còn padding 1% ở Local,
+    kể cả phương án tên "Strict". Tên Strict nghĩa là GLOBAL không
+    padding/không Exploration; KHÔNG có nghĩa mọi Local box đệm 0%.
+  - IGD+ dựa trên Pareto tham chiếu XẤP XỈ tạo riêng từ nhiều lần
+    đánh giá hàm Viennet thật, chuẩn hóa theo tham chiếu; thấp hơn tốt.
+  - IGD+ evaluated dùng Pareto của TẤT CẢ điểm đã đánh giá hàm thật
+    (Initial + Infill + Verification), KHÔNG chỉ riêng 5 Verify cuối.
+  - "IGD+ Pareto ANN kiểm tra offline" = lấy tất cả nghiệm do ANN đề
+    xuất, tính lại bằng hàm Viennet thật để đo chất lượng; các đánh giá
+    offline này CHỈ dùng để benchmark, KHÔNG tính vào ngân sách thuật
+    toán. Khi chuyển sang motor không được giả vờ số FEA offline = 0.
+
+HAI NGÂN SÁCH THỬ:
+  A) Initial 25 + 4 vòng x (12 DoE + 5 Verify) = 93 lần hàm thật;
+     train final ANN trước Verify cuối: 88 điểm. Chạy 6 random seeds.
+  B) Initial 60 + 4 vòng x (22 DoE + 5 Verify) = 168 lần hàm thật;
+     train final ANN trước Verify cuối: 163 điểm. Chạy 4 seeds.
+  R² được đo trên CÙNG 3.000 điểm LHS holdout độc lập phủ toàn miền,
+  báo cáo một R² cho MỖI hàm mục tiêu f1,f2,f3 (không gộp mù mờ).
+
+IGD+ "EVALUATED TRUE SAMPLES" TRUNG BÌNH (CÀNG THẤP CÀNG TỐT):
+                              93 eval      168 eval
+  ANN + NSGA-II một lần        0.1029       0.0576
+  Adaptive Strict GGLL        0.0394       0.0212
+  Adaptive Strict GLGL        0.0300       0.0174
+  Adaptive Padding GGLL       0.0305       0.0235
+  Adaptive Padding GLGL       0.0267       0.0252
+  Direct NSGA-II*             0.0624       0.0187
+
+  * Direct NSGA-II: cùng bộ hàm thật, cùng tổng 93/168 eval và có
+    thử population 12/16/24/32. Dòng 93 là shared-initial pop=16,
+    dòng 168 là shared-initial pop=12; chọn cấu hình có mean IGD+
+    thấp nhất trong nhóm shared-initial đã thử. Đây là kết quả
+    của sweep trên cùng benchmark, không phải pop được chốt trước.
+    Với Direct, 93 eval: Strict GLGL thắng 6/6 seeds khi so pop=16;
+    168 eval: Strict GLGL chỉ thắng 2/4 seeds khi so pop=12.
+    Do vậy lợi thế rất rõ ở ngân sách nhỏ, nhưng gần ngang với Direct
+    ở ngân sách lớn hơn, KHÔNG được khẳng định luôn thắng Direct GA.
+
+R² ANN BAN ĐẦU (25/60 MẪU) VÀ SAU TRAIN ĐỦ NGÂN SÁCH:
+                           f1        f2        f3
+  Initial 25              0.562     0.944    -1.096
+  Static 88               0.830     0.977     0.493
+  Strict GGLL -> 88       0.736     0.981    -0.102
+  Strict GLGL -> 88       0.731     0.981    -0.107
+
+  Initial 60              0.833     0.974     0.248
+  Static 163              0.847     0.969     0.612
+  Strict GGLL -> 163      0.836     0.984     0.562
+  Strict GLGL -> 163      0.824     0.983     0.387
+
+  R²(f1), R²(f2), R²(f3) là các chỉ số cho BA OUTPUT của ANN.
+  R² của f3 âm ở vài trường hợp: khả năng dự đoán TOÀN MIỀN kém.
+  Kết quả thú vị: ANN static có R² toàn miền thường cao hơn, trong
+  khi Adaptive tìm được Pareto có IGD+ tốt hơn. Chưa chứng minh ANN
+  Adaptive chính xác hơn NGAY VÙNG PARETO; phải đo thêm sai số địa
+  phương trên tập đánh giá độc lập, không suy luận chỉ từ IGD+.
+
+IGD+ PARETO DO ANN ĐỀ XUẤT, ĐÁNH GIÁ OFFLINE BẰNG HÀM THẬT:
+                              n0=25       n0=60
+  ANN static same-budget      0.1466      0.1061
+  Strict GGLL                 0.0347      0.0315
+  Strict GLGL                 0.0390      0.0440
+  Padding GGLL                0.0274      0.0174
+  Padding GLGL                0.0294      0.0573
+  -> Không có phương án thắng tất cả chỉ số; Strict nổi trội ở
+     IGD+ của điểm THẬT đã lấy, còn Padding GGLL có IGD+ ANN-Pareto
+     offline tốt trong lần thử này. Không bỏ qua sự phân biệt đó.
+
+KẾT LUẬN TẠM THỜI:
+  - Đây là PROOF OF CONCEPT hỗ trợ hướng "FEA-budget efficiency":
+    với ngân sách thấp, adaptive sampling có thể tìm vùng Pareto tốt
+    nhanh hơn static ANN và có thể hơn Direct NSGA-II.
+  - Ở 168 eval: Strict GLGL 0.0174 vs Direct 0.0187, chênh nhỏ và chỉ
+    thắng 2/4 seeds => chưa có bằng chứng mạnh vượt trội Direct.
+  - Các thí nghiệm chỉ dùng 2 DV, 3 objective, 4-6 seeds; chưa kiểm
+    chứng ở nhiều kích thước DV, bài toán có constraints hoặc 3D FEA.
+  - Mục tiêu paper khả thi để theo đuổi: quality of FEA-validated
+    Pareto under fixed budget, sample efficiency, so sánh static ANN
+    và Direct FEA optimization; KHÔNG tuyên bố đã đạt ngưỡng publish.
+
+====================================================================
+12. THĂM DÒ & BẢO VỆ CHỐNG PARETO ANN BAN ĐẦU DỰ ĐOÁN SAI
+====================================================================
+VẤN ĐỀ:
+  Nếu Pareto ANN ban đầu sai, lấy min/max DV chính xác bằng Pareto
+  dự đoán rồi thu hẹp Global box có thể bỏ sót vùng tốt bên ngoài.
+  5 Verify chỉ chọn từ Pareto dự đoán cũng không bảo đảm phát hiện
+  được một vùng tốt đã bị ANN bỏ sót. Đây là rủi ro cần kiểm tra.
+
+PHƯƠNG ÁN B — ADAPTIVE MARGIN PADDING (DỰ PHÒNG):
+  Với DV thứ i, bounds gốc [L_i,U_i], delta_i=U_i-L_i;
+  bounds Pareto [pmin_i,pmax_i]; padding alpha KHÔNG thứ nguyên:
+      lo_i = max(L_i, pmin_i - alpha * delta_i)
+      hi_i = min(U_i, pmax_i + alpha * delta_i)
+  DoE Global lấy trong [lo_i,hi_i], luôn kẹp trong giới hạn gốc.
+  Chưa bắt buộc miền Global kế tiếp là tập con miền Global trước;
+  nếu Pareto dịch chuyển có thể mở lại. Padding không thể cứu mọi
+  vùng cách xa Pareto; nó KHÔNG thay thế Exploration.
+
+  ĐỀ XUẤT LỊCH alpha (CHƯA CHỐT CHO MOTOR):
+    - Nếu chỉ có 2 vòng Global (V1): G1 alpha=0.10; G2 alpha=0.05.
+    - Nếu thử 9 vòng Global: G1-G3 0.10; G4-G6 0.05; G7-G9 0.01.
+    - Có thể test alpha theo lịch khác; lịch 10-5-1 là ví dụ nghiên
+      cứu, chưa tối ưu tự động, không phải công thức Barri.
+
+PHƯƠNG ÁN C — EXPLORATION–EXPLOITATION (DỰ PHÒNG):
+  Chia ngân sách DoE MỚI trong MỖI vòng Global, ví dụ:
+    - 70%-80% EXPLOITATION: LHS/DoE trong Pareto Global box
+      (có padding hoặc không).
+    - 20%-30% EXPLORATION: chọn mẫu trong TOÀN BỘ miền thiết kế gốc,
+      ưu tiên xa các FEA đã có (Maximin trên DV chuẩn hóa).
+  Gợi ý chuẩn hóa khoảng cách cho 2 điểm thiết kế x,z:
+      d(x,z) = sqrt(sum_i [ (x_i-z_i)/(U_i-L_i) ]^2 ).
+  Chọn ứng viên exploration xa điểm FEA đã có gần nhất, cập nhật
+  khoảng cách sau mỗi lần chọn; có thể tạo pool LHS toàn miền rồi
+  chọn Maximin tuần tự. Đây là "dò quanh" cả miền thiết kế, KHÁC
+  Maximin 5 Verification trong KHÔNG GIAN MỤC TIÊU.
+  Tỷ lệ 70/30 hay 80/20 là THAM SỐ cần thử, không phải tối ưu
+  đã được chứng minh; toàn miền không bảo đảm phát hiện global optimum.
+
+BỐN NHÓM THỬ NGHIỆM VIENNET (CÙNG FEA-EQUIVALENT BUDGET):
+  A Strict:     Global alpha=0, exploration=0.
+  B Padding:    Global alpha=0.10 ở G1 và 0.05 ở G2; exploration=0.
+  C Exploration: alpha=0; 30% Global DoE lấy mẫu xa dữ liệu FEA.
+  D Combined:   alpha=0.10/0.05; exploration=30% Global DoE.
+  Lưu ý code benchmark của cả bốn nhóm dùng Local padding 1%.
+
+IGD+ TRUNG BÌNH (ALTERNATING GLGL, ĐIỂM THẬT):
+                                 n0=25, 93 eval   n0=60, 168 eval
+  A Strict                           0.0300           0.0174
+  B Padding                          0.0267           0.0252
+  C Exploration                      0.0439           0.0352
+  D Combined                         0.0432           0.0225
+
+  - Ở ngân sách 93, B Padding tốt hơn A chút; ở 168, A tốt hơn.
+  - Exploration 30% và Combined không thắng ổn định trong benchmark
+    2 DV. Điều đó KHÔNG chứng minh Exploration vô ích cho motor nhiều
+    DV hoặc khi ANN đánh giá sai nghiệm tốt ở miền xa.
+  - Không thêm C/D làm MẶC ĐỊNH chỉ dựa trên dự đoán lý thuyết.
+
+QUYẾT ĐỊNH TRIỂN KHAI HIỆN TẠI:
+  - Strict Global làm BASELINE/METHOD V1 trước, để giảm độ phức tạp.
+  - GIỮ MARGIN PADDING và EXPLORATION là ABLATION / SAFETY OPTIONS,
+    dễ bật/tắt trong config: alpha_schedule, explore_fraction,
+    explore_selection, local_padding.
+  - Nếu ANN ban đầu sai Pareto nghiêm trọng hoặc hội tụ sớm, kiểm
+    thử B/C/D cùng ngân sách trước khi kết luận cần thay đổi V1.
+  - Không mặc định 10-5-1 hay 70/30 là "đã chọn" cho Motor-CAD.
+
+====================================================================
+13. CÁCH SO SÁNH CÔNG BẰNG & LUẬN ĐIỂM PAPER
+====================================================================
+STATIC ANN + NSGA-II CÙNG NGÂN SÁCH:
+  - n0=25: static huấn luyện MỘT LẦN với 88 LHS samples full-domain,
+    rồi Verification 5 => tổng 93 true evaluations.
+  - n0=60: static huấn luyện MỘT LẦN với 163 LHS samples full-domain,
+    rồi Verification 5 => tổng 168 true evaluations.
+  - Adaptive train ở nhiều vòng (initial + mỗi G/L), nhưng final ANN
+    trước Verify cuối có ĐÚNG 88 hoặc 163 mẫu; tổng 93 hoặc 168 eval.
+  - NHIỀU LẦN RETRAIN là một phần của adaptive, không phải sai lệch
+    về ngân sách FEA; ghi thêm thời gian train và tối ưu máy tính để
+    báo cáo full cost. Hai phương pháp không dùng đúng cùng TOẠ ĐỘ
+    FEA (static full-domain vs adaptive chọn thích nghi); chính khác
+    biệt phân bổ mẫu này là điều cần đo.
+  - Có thể thêm baseline "static 93/168 mẫu training, không Verify";
+    cấu hình đó CHƯA được benchmark, không gán số liệu.
+
+DIRECT NSGA-II:
+  - Không có ANN hay R²; đánh giá trực tiếp hàm thật nên không có sai
+    số SURROGATE, nhưng Pareto vẫn có sai số hội tụ do hữu hạn budget.
+  - So sánh cùng 93/168 lượt đánh giá, dùng Pareto từ ARCHIVE các
+    mẫu true-evaluated cho CẢ HAI phương pháp (không chỉ GA population
+    cuối). Kiểm tra pop size, các seed và cách chọn initial.
+
+CẦN CẨN THẬN TRONG PAPER:
+  - Chỉ số chính: IGD+/HV (cùng chuẩn hóa/reference), phân bố Pareto,
+    verified extreme performance, tổng số FEA, wall-clock FEA time,
+    CPU/GPU training+optimization, độ biến thiên nhiều seeds.
+  - IGD+ = 0.01 KHÔNG có nghĩa mặc định đã hội tụ; phải xem tham chiếu,
+    cách chuẩn hóa, cải thiện theo budget, ổn định Pareto và mục tiêu.
+  - Test curve của Direct NSGA-II với BUDGET TĂNG DẦN (nhiều thế hệ)
+    là đối chứng hợp lệ nếu thực sự chạy; báo trung thực tất cả FEA,
+    không bịa số liệu/không giấu khi GA thắng; không đánh tráo
+    offline true evaluations với mô phỏng "miễn phí".
+  - Claim nên kiểm chứng: "đạt IGD+/HV tương đương với ít FEA hơn" và
+    "surrogate adaptation tập trung Pareto dù R² toàn miền thấp hơn";
+    tất cả chỉ nói nếu dữ liệu Motor-CAD/3D thực tế xác nhận.
+  - Direct GA có thể đuổi kịp khi budget tăng; tính hiệu quả mẫu khác
+    với tuyên bố tốt hơn ở MỌI mức ngân sách.
+  - Test Viennet 2D là bước kiểm tra logic, KHÔNG chứng minh lợi thế
+    cho 3D motor. Nếu áp dụng 3D, cần theo dõi tăng số DV, độ phức
+    tạp và sai số ANN, tỉ lệ infeasible, thời gian FEA thực sự.
+  - Muốn tách riêng tác động của adaptive sampling so với retraining,
+    có thể thêm baseline "iterative LHS/random" cũng train lại theo
+    từng vòng với cùng budget (CHƯA chạy).
+
+====================================================================
+14. CHỈ DẪN NGẮN CHO CODEX / CÔNG VIỆC TIẾP THEO
+====================================================================
+  - TXT NÀY là context nghiên cứu để code workflow RIÊNG; không bắt
+    buộc đọc paper Barri và KHÔNG được tự triển khai APA như bản sao.
+  - Bộ tìm Pareto V1: dùng pymoo NSGA-II thực tế nếu khả dụng; code
+    benchmark hiện tại là NSGA-II tối giản để thử nhanh.
+  - Triển khai theo module: dataset + initial LHS + FEA adapter + ANN
+    multi-output + NSGA-II + Global/Local samplers + Verification 5
+    điểm + schedule 4-stage + logging/metrics/checkpoint/reproducibility.
+  - Tham số nên lưu config để người dùng quyết định, KHÔNG tự bịa:
+    initial_n, per_stage_doe_n, verify_n, max_seeds, ANN hyperparams,
+    Pareto group_count, global_padding_schedule, explore_fraction,
+    local_padding, batch sizes, convergence stop criteria.
+  - Với V1: Alpha=0 ở Global, explore_fraction=0; local padding cần
+    quy định rõ (benchmark đã dùng 1%). Các thí nghiệm B/C/D riêng.
+  - Ghi rõ data verification đi vào training khi nào; tránh re-running
+    một điểm FEA trùng và giữ mọi kết quả FEA kể cả điểm bị loại khỏi
+    Pareto hướng dẫn. Có thể kiểm thử bằng bài Viennet trước Motor-CAD.
+  - File kết quả test có sẵn trong thư mục làm việc:
+    viennet_adaptive_experiment.py,
+    viennet_static_vs_adaptive.py,
+    viennet_direct_nsga_compare.py,
+    viennet_test_corrected/summary.csv,
+    viennet_test_sparse_corrected/summary.csv,
+    viennet_static_comparison/summary.csv,
+    viennet_direct_compare/summary.csv.
+    Đây là ĐƯỜNG DẪN TÀI LIỆU tham khảo; khi chuyển cho Codex phải
+    gửi cả file/code cần thiết, không giả định Codex tự thấy chúng.
+
+CHỐT CẬP NHẬT 12/11/2026:
+  Strict Adaptive có tín hiệu tìm Pareto tốt hơn static ANN và Direct
+  NSGA-II ở NGÂN SÁCH NHỎ trong Viennet; với ngân sách cao hơn,
+  Direct có thể đuổi kịp. GIỮ V1 để kiểm tra motor thật, không mặc
+  định Padding/Exploration; giữ 10%-5%-1% và 70/30 là nhánh dự phòng.
+  Mọi kết luận mạnh phải chờ thêm seeds, baseline, chi phí thực và FEA.

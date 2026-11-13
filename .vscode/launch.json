@@ -2,10 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run NSGA-II (one hour)",
+      "name": "Run NSGA-II (parallel)",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/nsga2_motorcad.py",
+      "program": "${workspaceFolder}/code/nsga2_motorcad.py",
       "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",

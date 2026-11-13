@@ -1,0 +1,95 @@
+{
+  "model": "../Basic_Model.mot",
+  "motorcad_exe": "C:/Program Files/AnsysMotorCAD/v252/Motor-CAD_2025_2_1.exe",
+  "target_j": 7.0,
+  "j_tolerance": 1e-06,
+  "expected_current_definition": 2,
+  "j_validation": {
+    "current_parameter": "RmsCurrentCalc",
+    "tolerance_a_per_mm2": 0.001,
+    "scope": "Original single-size circular copper, star winding; actual RMS line current / (parallel paths * strands in hand * copper area). Do not reuse this formula for delta, mixed wire sizes, rectangular, or litz windings.",
+    "model_sha256": "09285e32ea72444940b606e21509fa660c27add65f3556e53e7b2b4d6d49e04b"
+  },
+  "fixed_parameters": [
+    "Stator_Lam_Dia",
+    "Stator_Lam_Length",
+    "Rotor_Lam_Length",
+    "Magnet_Length",
+    "Slot_Number",
+    "Pole_Number",
+    "MagTurnsConductor",
+    "MagPhases",
+    "ParallelPaths",
+    "NumberStrandsHand",
+    "WindingConnection",
+    "NumberOfWireSizes",
+    "Armature_Winding_Definition",
+    "RequestedGrossSlotFillFactor",
+    "RequestedNetSlotFillFactor",
+    "DriveType_BPM",
+    "Shaft_Speed_[RPM]",
+    "PhaseAdvance",
+    "DCBusVoltage",
+    "OnLoadLossCalculation",
+    "BackEMFLossCalculation",
+    "TorqueCalculation",
+    "TorquePointsPerCycle",
+    "TorqueNumberCycles",
+    "GeometryParameterisation"
+  ],
+  "objectives": {
+    "average_torque_nm": {
+      "parameter": "AvTorqueMsVw",
+      "definition": "Average electromagnetic airgap torque from Maxwell Stress and Virtual Work FE methods; distinct from shaft torque.",
+      "unit": "Nm",
+      "evidence": "inspection/automation_name_evidence.txt: exact installed automation label/description; inspection/parameter_probe.json: readable through API."
+    },
+    "power_factor": {
+      "parameter": "PhasorPowerFactor",
+      "definition": "Power Factor [Phasor] from the phasor diagram; signed, no absolute-value transformation; distinct from waveform PF.",
+      "unit": "1",
+      "evidence": "inspection/automation_name_evidence.txt and inspection/parameter_probe.json; Ansys 2025 R2 BPM Power Factor documentation."
+    },
+    "efficiency_pct": {
+      "parameter": "MotorEfficiency",
+      "definition": "Motor Efficiency from E-Magnetic, using the original model loss settings; distinct from SystemEfficiency and converter efficiency. No extra loss/thermal calculations are enabled.",
+      "unit": "%",
+      "evidence": "inspection/automation_name_evidence.txt: MotorEfficiency / Motor Efficiency / Efficiency of motor; inspection/parameter_probe.json: API-readable."
+    }
+  },
+  "optional_outputs": {
+    "shaft_torque_nm": {
+      "parameter": "ShaftTorque",
+      "unit": "Nm"
+    },
+    "system_efficiency_pct": {
+      "parameter": "SystemEfficiency",
+      "unit": "%"
+    },
+    "phase_terminal_voltage_rms_v": {
+      "parameter": "PhasorRmsPhaseVoltage",
+      "unit": "V"
+    },
+    "rms_line_current_a": {
+      "parameter": "RmsCurrentCalc",
+      "unit": "A"
+    },
+    "rms_current_input_a": {
+      "parameter": "RMSCurrent",
+      "unit": "A"
+    },
+    "peak_current_input_a": {
+      "parameter": "PeakCurrent",
+      "unit": "A"
+    },
+    "speed_rpm": {
+      "parameter": "Shaft_Speed_[RPM]",
+      "unit": "rpm"
+    }
+  },
+  "fixed_overrides": {
+    "Stator_Lam_Length": 100.0,
+    "Magnet_Length": 100.0,
+    "Rotor_Lam_Length": 100.0
+  }
+}
