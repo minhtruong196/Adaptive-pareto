@@ -1,0 +1,52 @@
+{
+  "conventional": {
+    "ann_pool": 100,
+    "fit": 92,
+    "validation": 8,
+    "final_verification": 20,
+    "new_physical_calls": 80,
+    "charged_fea": 120,
+    "train_calls": 1,
+    "training_pools": [
+      100
+    ],
+    "final_verification_unseen": true,
+    "initial40_shared": true
+  },
+  "sequential": {
+    "ann_pool": 100,
+    "fit": 92,
+    "validation": 8,
+    "final_verification": 20,
+    "new_physical_calls": 80,
+    "charged_fea": 120,
+    "train_calls": 5,
+    "training_pools": [
+      40,
+      52,
+      68,
+      84,
+      100
+    ],
+    "final_verification_unseen": true,
+    "initial40_shared": true
+  },
+  "alternating": {
+    "ann_pool": 100,
+    "fit": 92,
+    "validation": 8,
+    "final_verification": 20,
+    "new_physical_calls": 80,
+    "charged_fea": 120,
+    "train_calls": 5,
+    "training_pools": [
+      40,
+      52,
+      68,
+      84,
+      100
+    ],
+    "final_verification_unseen": true,
+    "initial40_shared": true
+  }
+}

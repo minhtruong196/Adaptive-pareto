@@ -1,0 +1,73 @@
+{
+  "conventional": {
+    "pool": 60,
+    "fit": 52,
+    "validation": 8,
+    "final_verification_new": 20,
+    "valid_records": 80,
+    "new_calls": 60,
+    "charged_fea": 80,
+    "shared20_identical": true,
+    "training_pools": [
+      60
+    ],
+    "training_source_counts": {
+      "shared_initial": 20,
+      "final_doe": 40
+    }
+  },
+  "sequential": {
+    "pool": 60,
+    "fit": 52,
+    "validation": 8,
+    "final_verification_new": 20,
+    "valid_records": 80,
+    "new_calls": 60,
+    "charged_fea": 80,
+    "shared20_identical": true,
+    "training_pools": [
+      20,
+      27,
+      38,
+      49,
+      60
+    ],
+    "training_source_counts": {
+      "shared_initial": 20,
+      "01_G_doe": 7,
+      "01_G_verify": 5,
+      "02_G_doe": 6,
+      "02_G_verify": 5,
+      "03_L_doe": 6,
+      "03_L_verify": 5,
+      "04_L_doe": 6
+    }
+  },
+  "alternating": {
+    "pool": 60,
+    "fit": 52,
+    "validation": 8,
+    "final_verification_new": 20,
+    "valid_records": 80,
+    "new_calls": 60,
+    "charged_fea": 80,
+    "shared20_identical": true,
+    "training_pools": [
+      20,
+      27,
+      38,
+      49,
+      60
+    ],
+    "training_source_counts": {
+      "shared_initial": 20,
+      "01_G_doe": 7,
+      "01_G_verify": 5,
+      "02_L_doe": 6,
+      "02_L_verify": 5,
+      "03_G_doe": 6,
+      "03_G_verify": 5,
+      "04_L_doe": 6
+    }
+  }
+}

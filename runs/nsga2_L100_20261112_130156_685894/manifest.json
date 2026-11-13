@@ -1,0 +1,157 @@
+{
+  "run_id": "d1dab63a-0a5b-437c-a51e-998649e5d110",
+  "created_at_utc": "2026-11-12T06:01:56.819529+00:00",
+  "source": "nsga2",
+  "fingerprint": "0b1b8dbf331ca759686767db9505c51d8d541eef7a734c42b1beb2156113e11c",
+  "signature": {
+    "schema_version": 1,
+    "model_sha256": "77e0ac98345ee2ec7c315bdbbaadf61886a6da03c723bd878f316c317d1082a9",
+    "config": {
+      "model": "D:\\Project python\\2026\\adaptive pareto_Intermag 2027\\Basic_Model.mot",
+      "motorcad_exe": "C:\\Program Files\\AnsysMotorCAD\\v252\\Motor-CAD_2025_2_1.exe",
+      "target_j": 7.0,
+      "j_tolerance": 1e-06,
+      "expected_current_definition": 2,
+      "j_validation": {
+        "current_parameter": "RmsCurrentCalc",
+        "tolerance_a_per_mm2": 0.001,
+        "scope": "Original single-size circular copper, star winding; actual RMS line current / (parallel paths * strands in hand * copper area). Do not reuse this formula for delta, mixed wire sizes, rectangular, or litz windings.",
+        "model_sha256": "77e0ac98345ee2ec7c315bdbbaadf61886a6da03c723bd878f316c317d1082a9"
+      },
+      "fixed_parameters": [
+        "Stator_Lam_Dia",
+        "Stator_Lam_Length",
+        "Rotor_Lam_Length",
+        "Magnet_Length",
+        "Slot_Number",
+        "Pole_Number",
+        "MagTurnsConductor",
+        "MagPhases",
+        "ParallelPaths",
+        "NumberStrandsHand",
+        "WindingConnection",
+        "NumberOfWireSizes",
+        "Armature_Winding_Definition",
+        "RequestedGrossSlotFillFactor",
+        "RequestedNetSlotFillFactor",
+        "DriveType_BPM",
+        "Shaft_Speed_[RPM]",
+        "PhaseAdvance",
+        "DCBusVoltage",
+        "OnLoadLossCalculation",
+        "BackEMFLossCalculation",
+        "TorqueCalculation",
+        "TorquePointsPerCycle",
+        "TorqueNumberCycles",
+        "GeometryParameterisation"
+      ],
+      "objectives": {
+        "average_torque_nm": {
+          "parameter": "AvTorqueMsVw",
+          "definition": "Average electromagnetic airgap torque from Maxwell Stress and Virtual Work FE methods; distinct from shaft torque.",
+          "unit": "Nm",
+          "evidence": "inspection/automation_name_evidence.txt: exact installed automation label/description; inspection/parameter_probe.json: readable through API."
+        },
+        "power_factor": {
+          "parameter": "PhasorPowerFactor",
+          "definition": "Power Factor [Phasor] from the phasor diagram; signed, no absolute-value transformation; distinct from waveform PF.",
+          "unit": "1",
+          "evidence": "inspection/automation_name_evidence.txt and inspection/parameter_probe.json; Ansys 2025 R2 BPM Power Factor documentation."
+        },
+        "efficiency_pct": {
+          "parameter": "MotorEfficiency",
+          "definition": "Motor Efficiency from E-Magnetic, using the original model loss settings; distinct from SystemEfficiency and converter efficiency. No extra loss/thermal calculations are enabled.",
+          "unit": "%",
+          "evidence": "inspection/automation_name_evidence.txt: MotorEfficiency / Motor Efficiency / Efficiency of motor; inspection/parameter_probe.json: API-readable."
+        }
+      },
+      "optional_outputs": {
+        "shaft_torque_nm": {
+          "parameter": "ShaftTorque",
+          "unit": "Nm"
+        },
+        "system_efficiency_pct": {
+          "parameter": "SystemEfficiency",
+          "unit": "%"
+        },
+        "phase_terminal_voltage_rms_v": {
+          "parameter": "PhasorRmsPhaseVoltage",
+          "unit": "V"
+        },
+        "rms_line_current_a": {
+          "parameter": "RmsCurrentCalc",
+          "unit": "A"
+        },
+        "rms_current_input_a": {
+          "parameter": "RMSCurrent",
+          "unit": "A"
+        },
+        "peak_current_input_a": {
+          "parameter": "PeakCurrent",
+          "unit": "A"
+        },
+        "speed_rpm": {
+          "parameter": "Shaft_Speed_[RPM]",
+          "unit": "rpm"
+        }
+      },
+      "fixed_overrides": {
+        "Stator_Lam_Length": 100.0,
+        "Magnet_Length": 100.0,
+        "Rotor_Lam_Length": 100.0
+      }
+    },
+    "variables": [
+      [
+        "Ratio_Bore",
+        0.5,
+        0.8,
+        0.0001
+      ],
+      [
+        "Ratio_SlotDepth_ParallelTooth",
+        0.5,
+        0.8,
+        0.0001
+      ],
+      [
+        "Ratio_ToothWidth",
+        0.3,
+        0.65,
+        0.0001
+      ],
+      [
+        "Ratio_ShaftD",
+        0.5,
+        0.8,
+        0.0001
+      ],
+      [
+        "Ratio_MagnetArc",
+        0.7,
+        0.9,
+        0.05
+      ],
+      [
+        "Magnet_Thickness",
+        3.0,
+        5.0,
+        0.5
+      ],
+      [
+        "Slot_Corner_Radius",
+        0.0,
+        2.0,
+        0.5
+      ]
+    ],
+    "python": "3.13.7",
+    "motorcad_exe_sha256": "4b32405e86e075c7986efa96f126bcc8c90f2d42ef857c1fea335118bf71801d",
+    "packages": {
+      "ansys-motorcad-core": "0.7.4",
+      "pymoo": "0.6.1.5",
+      "scipy": "1.17.0",
+      "numpy": "2.4.2"
+    }
+  }
+}

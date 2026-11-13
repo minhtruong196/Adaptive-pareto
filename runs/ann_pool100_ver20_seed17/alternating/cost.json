@@ -1,0 +1,14 @@
+{
+  "charged_fea": 120,
+  "new_fea": 80,
+  "shared_initial_reused": 40,
+  "wall_seconds_excluding_initial": 627.4058385000026,
+  "shared_initial_solver_seconds": 0.0,
+  "method_solver_seconds": 2752.0324180999814,
+  "ann_train_calls": 5,
+  "ann_training_seconds": 2.437862699989637,
+  "ann_pool_n": 100,
+  "final_verification_n": 20,
+  "final_fit_n": 92,
+  "shared_initial_new_calls": 0
+}

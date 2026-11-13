@@ -1,0 +1,7 @@
+﻿schema_version,run_id,evaluation_id,source,generation,design_key,config_fingerprint,Ratio_Bore,Ratio_SlotDepth_ParallelTooth,Ratio_ToothWidth,Ratio_ShaftD,Ratio_MagnetArc,Magnet_Thickness,Slot_Corner_Radius,average_torque_nm,power_factor,efficiency_pct,status,reason,fea_started,started_at_utc,finished_at_utc,elapsed_s,archive_hv,charged_fea,final_verification,fit,method,pool,validation,verified20_hv,wall_minutes_new
+,,,,,,,,,,,,,,,,,,,,,,,1.050063817939366,80,20,52,conventional,60,8,0.9949693053187183,6.281158786666735
+,,,,,,,,,,,,,,,,,,,,,,,1.1023073211066223,80,20,52,sequential,60,8,1.095133876638725,8.825277608333272
+,,,,,,,,,,,,,,,,,,,,,,,1.0989288981221772,80,20,52,alternating,60,8,1.0940708804914614,8.499368656666654
+,,,,,,,,,,,,,,,,,,,,,,,1.0861350313573128,120,20,92,conventional,100,8,1.0675332347666793,7.82730026833342
+,,,,,,,,,,,,,,,,,,,,,,,1.1250000586769247,120,20,92,sequential,100,8,1.0971079116193376,10.104506763333363
+,,,,,,,,,,,,,,,,,,,,,,,1.1221347421283334,120,20,92,alternating,100,8,1.0996791940663255,10.456763975000042

@@ -85,7 +85,7 @@ Trước triển khai model mới cần có file model và định nghĩa biến
 
 ## Nơi lưu bằng chứng
 
-Các thư mục `runs/` chứa dữ liệu mô phỏng lớn và được giữ trên máy local, không đưa vào Git. README này lưu bảng kết quả tổng hợp; các liên kết báo cáo bên dưới dùng trong workspace local. Mã nguồn, cấu hình, initial CSV và calibration HV trong `data/` được quản lý bằng Git.
+Các thư mục `runs/` được đưa lên Git, gồm dữ liệu FEA, kết quả, checkpoint ANN/NSGA-II, log, báo cáo và biểu đồ. File model Motor-CAD (`.mot`, `.bak`) và thư mục solver `work/` được giữ trên máy local vì dung lượng lớn. Khi chạy mô phỏng trên máy khác, cần cung cấp model Motor-CAD phù hợp và cập nhật đường dẫn trong cấu hình.
 
 - [Báo cáo pool60 + verification20](runs/ann_pool60_ver20_seed17/REPORT.md)
 - [Báo cáo pool100 + verification20](runs/ann_pool100_ver20_seed17/REPORT.md)

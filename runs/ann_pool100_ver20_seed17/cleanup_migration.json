@@ -1,0 +1,12 @@
+{
+  "description": "Only asset paths and unused legacy setting migrated; FEA records, checkpoints and metric values unchanged",
+  "original_campaign_manifest_sha256": "0879bb2f11d8a615f4f988e0c3acd4fdf9fcebd9928c373d660469ac9506768f",
+  "previous_asset_paths": {
+    "hv_calibration": "runs/ann_100_seed17/comparison.json",
+    "initial_reuse_from": "runs/ann_100_seed17/shared_initial"
+  },
+  "current_asset_paths": {
+    "hv_calibration": "data/spm_hv_calibration.json",
+    "initial_reuse_from": "data/spm_initial40/shared_initial"
+  }
+}

@@ -1,11 +1,16 @@
 .venv/
 __pycache__/
-runs/
 *.tmp
 
-# Motor-CAD generated solver files and local inspection output.
+# Motor-CAD models and generated solver files (kept locally).
+*.mot
+*.bak
 /Basic_Model/
-/inspection/
+/runs/**/work/
+/inspection/**/work/
+
+# Runtime writer locks.
+*.lock
 
 # Local credentials and editor/OS scratch files.
 .env

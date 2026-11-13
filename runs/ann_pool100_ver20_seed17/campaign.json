@@ -1,0 +1,47 @@
+{
+  "settings": {
+    "seed": 17,
+    "workers": 5,
+    "budget": 120,
+    "initial_n": 40,
+    "conventional_doe_n": 100,
+    "verify_n": 5,
+    "validation_n": 8,
+    "hidden": [
+      32,
+      32
+    ],
+    "epochs": 500,
+    "learning_rate": 0.003,
+    "pareto_population": 100,
+    "pareto_generations": 100,
+    "group_count": 4,
+    "local_padding": 0.01,
+    "global_padding_schedule": [
+      0,
+      0
+    ],
+    "explore_fraction": 0,
+    "motorcad_config": "nsga2_config.json",
+    "direct_reference": "runs/nsga2_L100_20261112_130156_685894/evaluations.csv",
+    "budget_semantics": "ann_pool_plus_final_verification",
+    "pool_n": 100,
+    "stage_doe_counts": [
+      12,
+      11,
+      11,
+      11
+    ],
+    "stage_pool_targets": [
+      52,
+      68,
+      84,
+      100
+    ],
+    "final_verify_n": 20,
+    "final_verify_unseen_only": true,
+    "hv_calibration": "data/spm_hv_calibration.json",
+    "initial_reuse_from": "data/spm_initial40/shared_initial"
+  },
+  "fingerprint": "4b2793975b6ec13b91359f8e47601ac87dc7b6aa5f867683955f40dab67dc4df"
+}

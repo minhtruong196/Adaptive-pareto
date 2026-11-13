@@ -1,0 +1,61 @@
+{
+  "all_selected": {
+    "average_torque_nm": {
+      "mae": 2.090554246076045,
+      "rmse": 2.2360193076472026,
+      "r2": 0.8513834574314942,
+      "n": 20,
+      "max_absolute_error": 3.4871413644815483,
+      "max_relative_error_pct": 32.48977084997031,
+      "mean_relative_error_pct": 16.592912053620694
+    },
+    "power_factor": {
+      "mae": 0.0020028359529151497,
+      "rmse": 0.0022305934602078153,
+      "r2": 0.9948428974910835,
+      "n": 20,
+      "max_absolute_error": 0.0036381966889508233,
+      "max_relative_error_pct": 0.370045224042657,
+      "mean_relative_error_pct": 0.20732929289401877
+    },
+    "efficiency_pct": {
+      "mae": 0.86521930547582,
+      "rmse": 0.924272177736321,
+      "r2": 0.5065791354199696,
+      "n": 20,
+      "max_absolute_error": 1.5116044265740811,
+      "max_relative_error_pct": 1.7418756076948503,
+      "mean_relative_error_pct": 0.9783078730822699
+    }
+  },
+  "unseen_n": 20,
+  "unseen_only": {
+    "average_torque_nm": {
+      "mae": 2.090554246076045,
+      "rmse": 2.2360193076472026,
+      "r2": 0.8513834574314942,
+      "n": 20,
+      "max_absolute_error": 3.4871413644815483,
+      "max_relative_error_pct": 32.48977084997031,
+      "mean_relative_error_pct": 16.592912053620694
+    },
+    "power_factor": {
+      "mae": 0.0020028359529151497,
+      "rmse": 0.0022305934602078153,
+      "r2": 0.9948428974910835,
+      "n": 20,
+      "max_absolute_error": 0.0036381966889508233,
+      "max_relative_error_pct": 0.370045224042657,
+      "mean_relative_error_pct": 0.20732929289401877
+    },
+    "efficiency_pct": {
+      "mae": 0.86521930547582,
+      "rmse": 0.924272177736321,
+      "r2": 0.5065791354199696,
+      "n": 20,
+      "max_absolute_error": 1.5116044265740811,
+      "max_relative_error_pct": 1.7418756076948503,
+      "mean_relative_error_pct": 0.9783078730822699
+    }
+  }
+}

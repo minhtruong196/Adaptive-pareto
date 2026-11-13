@@ -1,0 +1,16 @@
+{
+  "run_id": "d1dab63a-0a5b-437c-a51e-998649e5d110",
+  "config_fingerprint": "0b1b8dbf331ca759686767db9505c51d8d541eef7a734c42b1beb2156113e11c",
+  "solver_attempts": 800,
+  "successful_solves": 800,
+  "interrupted_attempts": 0,
+  "cache_hits": 0,
+  "requests": 800,
+  "distinct_designs": 800,
+  "evaluation_elapsed_s": 23190.307668999994,
+  "wall_time_s": 4977.8531582,
+  "budget_unit": "one do_magnetic_calculation call, not internal FEA sub-solves",
+  "statuses": {
+    "ok": 800
+  }
+}

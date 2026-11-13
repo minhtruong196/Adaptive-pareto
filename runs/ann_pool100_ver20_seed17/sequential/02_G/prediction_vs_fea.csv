@@ -1,0 +1,6 @@
+﻿schema_version,run_id,evaluation_id,source,generation,design_key,config_fingerprint,Ratio_Bore,Ratio_SlotDepth_ParallelTooth,Ratio_ToothWidth,Ratio_ShaftD,Ratio_MagnetArc,Magnet_Thickness,Slot_Corner_Radius,average_torque_nm,power_factor,efficiency_pct,status,reason,fea_started,started_at_utc,finished_at_utc,elapsed_s,fea_average_torque_nm,fea_efficiency_pct,fea_power_factor,pred_average_torque_nm,pred_efficiency_pct,pred_power_factor,used_for_fit,used_for_validation
+,,70,,,"2,2997,1,2369,4,4,3",,,,,,,,,,,,,,,,,,23.0121899324526,86.9381519846516,0.913760805906074,23.715687314643805,87.63509753636932,0.9130023893609893,False,False
+,,73,,,"3000,4,3497,2149,4,4,4",,,,,,,,,,,,,,,,,,4.92666240199399,86.6979033285667,0.997746534075591,4.774213411280087,87.22820870443786,0.9997776759675023,False,False
+,,69,,,"1089,0,3497,6,4,4,0",,,,,,,,,,,,,,,,,,11.153244286769,90.9823390633694,0.992768291295375,11.270599904243252,91.23892811361233,0.995595531607003,False,False
+,,72,,,"905,1869,321,121,4,4,2",,,,,,,,,,,,,,,,,,20.8868493613812,89.2168476492615,0.964632160039353,20.144171227663197,89.25800101810393,0.9641775492745729,False,False
+,,71,,,"2543,10,3497,2,4,4,0",,,,,,,,,,,,,,,,,,6.89796995987912,88.5386223746107,0.996646061674068,7.774918181764183,89.31025543695324,0.9970226146754692,False,False

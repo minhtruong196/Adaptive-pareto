@@ -1,0 +1,261 @@
+{
+  "methods": [
+    {
+      "pool": 60,
+      "method": "conventional",
+      "fit": 52,
+      "validation": 8,
+      "final_verification": 20,
+      "charged_fea": 80,
+      "archive_hv": 1.050063817939366,
+      "verified20_hv": 0.9949693053187183,
+      "verification_errors": {
+        "average_torque_nm": {
+          "mae": 2.090554246076045,
+          "rmse": 2.2360193076472026,
+          "r2": 0.8513834574314942,
+          "n": 20,
+          "max_absolute_error": 3.4871413644815483,
+          "max_relative_error_pct": 32.48977084997031,
+          "mean_relative_error_pct": 16.592912053620694
+        },
+        "power_factor": {
+          "mae": 0.0020028359529151497,
+          "rmse": 0.0022305934602078153,
+          "r2": 0.9948428974910835,
+          "n": 20,
+          "max_absolute_error": 0.0036381966889508233,
+          "max_relative_error_pct": 0.370045224042657,
+          "mean_relative_error_pct": 0.20732929289401877
+        },
+        "efficiency_pct": {
+          "mae": 0.86521930547582,
+          "rmse": 0.924272177736321,
+          "r2": 0.5065791354199696,
+          "n": 20,
+          "max_absolute_error": 1.5116044265740811,
+          "max_relative_error_pct": 1.7418756076948503,
+          "mean_relative_error_pct": 0.9783078730822699
+        }
+      },
+      "wall_minutes_new": 6.281158786666735
+    },
+    {
+      "pool": 60,
+      "method": "sequential",
+      "fit": 52,
+      "validation": 8,
+      "final_verification": 20,
+      "charged_fea": 80,
+      "archive_hv": 1.1023073211066223,
+      "verified20_hv": 1.095133876638725,
+      "verification_errors": {
+        "average_torque_nm": {
+          "mae": 1.3203331323829668,
+          "rmse": 1.497682413494654,
+          "r2": 0.9492560220986536,
+          "n": 20,
+          "max_absolute_error": 2.338517395210941,
+          "max_relative_error_pct": 44.2177358829645,
+          "mean_relative_error_pct": 12.440779241913917
+        },
+        "power_factor": {
+          "mae": 0.004869047967324824,
+          "rmse": 0.006581212478077765,
+          "r2": 0.975462947603292,
+          "n": 20,
+          "max_absolute_error": 0.02011304371451239,
+          "max_relative_error_pct": 2.3646061968617653,
+          "mean_relative_error_pct": 0.5251521356649169
+        },
+        "efficiency_pct": {
+          "mae": 0.681214205380764,
+          "rmse": 0.876391210103935,
+          "r2": 0.839377442558028,
+          "n": 20,
+          "max_absolute_error": 1.7543776881254587,
+          "max_relative_error_pct": 2.0570594587586286,
+          "mean_relative_error_pct": 0.7872818620457913
+        }
+      },
+      "wall_minutes_new": 8.825277608333272
+    },
+    {
+      "pool": 60,
+      "method": "alternating",
+      "fit": 52,
+      "validation": 8,
+      "final_verification": 20,
+      "charged_fea": 80,
+      "archive_hv": 1.0989288981221772,
+      "verified20_hv": 1.0940708804914614,
+      "verification_errors": {
+        "average_torque_nm": {
+          "mae": 0.6424693928157226,
+          "rmse": 0.8056740061603517,
+          "r2": 0.9856209438909662,
+          "n": 20,
+          "max_absolute_error": 1.6525582444341422,
+          "max_relative_error_pct": 20.78214953745192,
+          "mean_relative_error_pct": 6.122400593653196
+        },
+        "power_factor": {
+          "mae": 0.004758877372139409,
+          "rmse": 0.005622228921866475,
+          "r2": 0.9551058718712977,
+          "n": 20,
+          "max_absolute_error": 0.011709844807915037,
+          "max_relative_error_pct": 1.264181743262358,
+          "mean_relative_error_pct": 0.49167395034161687
+        },
+        "efficiency_pct": {
+          "mae": 0.5244311321592591,
+          "rmse": 0.6258728651214456,
+          "r2": 0.8358183986554316,
+          "n": 20,
+          "max_absolute_error": 1.317206491530868,
+          "max_relative_error_pct": 1.541140768934841,
+          "mean_relative_error_pct": 0.5977751829717495
+        }
+      },
+      "wall_minutes_new": 8.499368656666654
+    },
+    {
+      "pool": 100,
+      "method": "conventional",
+      "fit": 92,
+      "validation": 8,
+      "final_verification": 20,
+      "charged_fea": 120,
+      "archive_hv": 1.0861350313573128,
+      "verified20_hv": 1.0675332347666793,
+      "verification_errors": {
+        "average_torque_nm": {
+          "mae": 1.4297501188727606,
+          "rmse": 1.7752449080562358,
+          "r2": 0.9002592182365575,
+          "n": 20,
+          "max_absolute_error": 3.6023225352286072,
+          "max_relative_error_pct": 24.42009827994162,
+          "mean_relative_error_pct": 9.781884274872901
+        },
+        "power_factor": {
+          "mae": 0.003376922551796857,
+          "rmse": 0.003898679397644966,
+          "r2": 0.9690561815302859,
+          "n": 20,
+          "max_absolute_error": 0.009502574939604713,
+          "max_relative_error_pct": 1.0337217762762214,
+          "mean_relative_error_pct": 0.34827572221946335
+        },
+        "efficiency_pct": {
+          "mae": 0.5979568424747683,
+          "rmse": 0.7004914870676187,
+          "r2": 0.6574670127589055,
+          "n": 20,
+          "max_absolute_error": 1.1649176562242332,
+          "max_relative_error_pct": 1.3244025457076904,
+          "mean_relative_error_pct": 0.6745095020804981
+        }
+      },
+      "wall_minutes_new": 7.82730026833342
+    },
+    {
+      "pool": 100,
+      "method": "sequential",
+      "fit": 92,
+      "validation": 8,
+      "final_verification": 20,
+      "charged_fea": 120,
+      "archive_hv": 1.1250000586769247,
+      "verified20_hv": 1.0971079116193376,
+      "verification_errors": {
+        "average_torque_nm": {
+          "mae": 0.37136452464175723,
+          "rmse": 0.43813601084589565,
+          "r2": 0.994156608411171,
+          "n": 20,
+          "max_absolute_error": 0.9358956463917103,
+          "max_relative_error_pct": 10.500109135179901,
+          "mean_relative_error_pct": 2.8286179367087216
+        },
+        "power_factor": {
+          "mae": 0.0013683304377295924,
+          "rmse": 0.0017203901784737224,
+          "r2": 0.995373165717665,
+          "n": 20,
+          "max_absolute_error": 0.003893629419519762,
+          "max_relative_error_pct": 0.41587985957728435,
+          "mean_relative_error_pct": 0.14293234739238053
+        },
+        "efficiency_pct": {
+          "mae": 0.1566519616366655,
+          "rmse": 0.18625762541955368,
+          "r2": 0.9737748759841965,
+          "n": 20,
+          "max_absolute_error": 0.46847866206586275,
+          "max_relative_error_pct": 0.5226259062681853,
+          "mean_relative_error_pct": 0.17552493312660342
+        }
+      },
+      "wall_minutes_new": 10.104506763333363
+    },
+    {
+      "pool": 100,
+      "method": "alternating",
+      "fit": 92,
+      "validation": 8,
+      "final_verification": 20,
+      "charged_fea": 120,
+      "archive_hv": 1.1221347421283334,
+      "verified20_hv": 1.0996791940663255,
+      "verification_errors": {
+        "average_torque_nm": {
+          "mae": 0.4177065666884511,
+          "rmse": 0.6011687025984316,
+          "r2": 0.9916191529132914,
+          "n": 20,
+          "max_absolute_error": 1.809328942388433,
+          "max_relative_error_pct": 9.660723786463862,
+          "mean_relative_error_pct": 2.952352732843211
+        },
+        "power_factor": {
+          "mae": 0.0015698676703918336,
+          "rmse": 0.002496874608678043,
+          "r2": 0.9916413784317477,
+          "n": 20,
+          "max_absolute_error": 0.009092209221785663,
+          "max_relative_error_pct": 0.9771003421601252,
+          "mean_relative_error_pct": 0.164870069074446
+        },
+        "efficiency_pct": {
+          "mae": 0.17828287513193503,
+          "rmse": 0.2833207477807973,
+          "r2": 0.9624749649238888,
+          "n": 20,
+          "max_absolute_error": 1.0147031304925918,
+          "max_relative_error_pct": 1.1470885723630109,
+          "mean_relative_error_pct": 0.20175243764916145
+        }
+      },
+      "wall_minutes_new": 10.456763975000042
+    }
+  ],
+  "hv_min": [
+    4.54883620411918,
+    0.884752904222439,
+    79.5612967771118
+  ],
+  "hv_span": [
+    18.52456735421862,
+    0.11341821372885497,
+    11.529350551225392
+  ],
+  "hv_reference": [
+    1.1,
+    1.1,
+    1.1
+  ],
+  "direct800_hv": 1.14717387351724,
+  "note": "Pool60=>52fit+8val+20verification, total80. Pool100=>92fit+8val+20verification,total120. Same fixed normalization; one seed; validation/test coordinates differ across budgets."
+}

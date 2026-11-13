@@ -1,0 +1,18 @@
+Worker 1/5 ready (no smoke FEA).
+Worker 2/5 ready (no smoke FEA).
+Worker 3/5 ready (no smoke FEA).
+Worker 4/5 ready (no smoke FEA).
+Worker 5/5 ready (no smoke FEA).
+final: training pool 60, verification 20, charged FEA 80/80
+conventional COMPLETE: {'charged_fea': 80, 'new_fea': 60, 'shared_initial_reused': 20, 'wall_seconds_excluding_initial': 376.8695272000041, 'shared_initial_solver_seconds': 0.0, 'method_solver_seconds': 1725.6534203000047, 'ann_train_calls': 1, 'ann_training_seconds': 0.5109520999976667, 'ann_pool_n': 60, 'final_verification_n': 20, 'final_fit_n': 52, 'shared_initial_new_calls': 0}
+01_G: training pool 27, verification 5, charged FEA 32/80
+02_G: training pool 38, verification 5, charged FEA 43/80
+03_L: training pool 49, verification 5, charged FEA 54/80
+04_L: training pool 60, verification 20, charged FEA 80/80
+sequential COMPLETE: {'charged_fea': 80, 'new_fea': 60, 'shared_initial_reused': 20, 'wall_seconds_excluding_initial': 529.5166564999963, 'shared_initial_solver_seconds': 0.0, 'method_solver_seconds': 2165.856799899986, 'ann_train_calls': 5, 'ann_training_seconds': 2.5324146000057226, 'ann_pool_n': 60, 'final_verification_n': 20, 'final_fit_n': 52, 'shared_initial_new_calls': 0}
+01_G: training pool 27, verification 5, charged FEA 32/80
+02_L: training pool 38, verification 5, charged FEA 43/80
+03_G: training pool 49, verification 5, charged FEA 54/80
+04_L: training pool 60, verification 20, charged FEA 80/80
+alternating COMPLETE: {'charged_fea': 80, 'new_fea': 60, 'shared_initial_reused': 20, 'wall_seconds_excluding_initial': 509.9621193999992, 'shared_initial_solver_seconds': 0.0, 'method_solver_seconds': 2085.9769180999865, 'ann_train_calls': 5, 'ann_training_seconds': 2.5474483000070904, 'ann_pool_n': 60, 'final_verification_n': 20, 'final_fit_n': 52, 'shared_initial_new_calls': 0}
+ALL THREE 80-FEA METHODS COMPLETE
