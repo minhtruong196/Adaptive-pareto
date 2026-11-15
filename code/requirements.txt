@@ -8,3 +8,5 @@ matplotlib==3.9.4; python_version < "3.13"
 matplotlib==3.10.8; python_version >= "3.13"
 dill==0.4.1
 torch==2.7.1
+pywin32==311; sys_platform == "win32"
+openpyxl==3.1.5

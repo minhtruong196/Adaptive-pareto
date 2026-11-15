@@ -1,0 +1,158 @@
+{
+  "method": "Cumulative valid FEA archive HV, reconstructed at each generation; 800 unique IDs across 20 batches of 40",
+  "normalization": {
+    "average_torque_nm": 10.202764865941374,
+    "power_factor": 0.995260120277639,
+    "efficiency_pct": 92.75833588390243
+  },
+  "reference_point_maximization": [
+    0,
+    0,
+    0
+  ],
+  "extremes": {
+    "average_torque_nm": {
+      "point_id": 660,
+      "average_torque_nm": 10.202764865941374,
+      "power_factor": 0.6300060961512157,
+      "efficiency_pct": 89.64484803026471
+    },
+    "power_factor": {
+      "point_id": 466,
+      "average_torque_nm": 0.4856846902260089,
+      "power_factor": 0.995260120277639,
+      "efficiency_pct": 86.78166566173034
+    },
+    "efficiency_pct": {
+      "point_id": 469,
+      "average_torque_nm": 0.40250061952750427,
+      "power_factor": 0.9588323638917043,
+      "efficiency_pct": 92.75833588390243
+    }
+  },
+  "history": [
+    {
+      "generation": 1,
+      "candidate_count": 40,
+      "valid_count": 28,
+      "archive_hv": 0.39632024266582794
+    },
+    {
+      "generation": 2,
+      "candidate_count": 80,
+      "valid_count": 61,
+      "archive_hv": 0.4483350499394395
+    },
+    {
+      "generation": 3,
+      "candidate_count": 120,
+      "valid_count": 94,
+      "archive_hv": 0.5064561038561267
+    },
+    {
+      "generation": 4,
+      "candidate_count": 160,
+      "valid_count": 132,
+      "archive_hv": 0.5434998858106682
+    },
+    {
+      "generation": 5,
+      "candidate_count": 200,
+      "valid_count": 169,
+      "archive_hv": 0.5826239092270818
+    },
+    {
+      "generation": 6,
+      "candidate_count": 240,
+      "valid_count": 207,
+      "archive_hv": 0.6449415317178328
+    },
+    {
+      "generation": 7,
+      "candidate_count": 280,
+      "valid_count": 245,
+      "archive_hv": 0.6676599929242342
+    },
+    {
+      "generation": 8,
+      "candidate_count": 320,
+      "valid_count": 281,
+      "archive_hv": 0.6791261892359295
+    },
+    {
+      "generation": 9,
+      "candidate_count": 360,
+      "valid_count": 316,
+      "archive_hv": 0.6880373327932164
+    },
+    {
+      "generation": 10,
+      "candidate_count": 400,
+      "valid_count": 352,
+      "archive_hv": 0.7535444135045173
+    },
+    {
+      "generation": 11,
+      "candidate_count": 440,
+      "valid_count": 386,
+      "archive_hv": 0.7564818197862487
+    },
+    {
+      "generation": 12,
+      "candidate_count": 480,
+      "valid_count": 420,
+      "archive_hv": 0.7607299207865635
+    },
+    {
+      "generation": 13,
+      "candidate_count": 520,
+      "valid_count": 456,
+      "archive_hv": 0.7644597404355317
+    },
+    {
+      "generation": 14,
+      "candidate_count": 560,
+      "valid_count": 490,
+      "archive_hv": 0.8051154980260647
+    },
+    {
+      "generation": 15,
+      "candidate_count": 600,
+      "valid_count": 527,
+      "archive_hv": 0.8399189656108825
+    },
+    {
+      "generation": 16,
+      "candidate_count": 640,
+      "valid_count": 565,
+      "archive_hv": 0.8434590561927254
+    },
+    {
+      "generation": 17,
+      "candidate_count": 680,
+      "valid_count": 600,
+      "archive_hv": 0.8599705277143305
+    },
+    {
+      "generation": 18,
+      "candidate_count": 720,
+      "valid_count": 634,
+      "archive_hv": 0.861598080299934
+    },
+    {
+      "generation": 19,
+      "candidate_count": 760,
+      "valid_count": 670,
+      "archive_hv": 0.8620187323153995
+    },
+    {
+      "generation": 20,
+      "candidate_count": 800,
+      "valid_count": 706,
+      "archive_hv": 0.8636402151212166
+    }
+  ],
+  "last_3_generations_relative_gain_pct": 0.4267224618312859,
+  "last_5_generations_relative_gain_pct": 2.8242307271965528,
+  "note": "Post-hoc fixed scaling for this run; retain these scales/reference for any subsequent comparisons. Not evidence of global convergence."
+}

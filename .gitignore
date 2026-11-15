@@ -1,5 +1,6 @@
 .venv/
 __pycache__/
+/outputs/**/node_modules/
 *.tmp
 
 # Motor-CAD models and generated solver files (kept locally).
@@ -8,6 +9,13 @@ __pycache__/
 /Basic_Model/
 /runs/**/work/
 /inspection/**/work/
+
+# Ansys generated solution caches; retain the source .aedt models.
+*.aedtresults/
+
+# Source model snapshots are versioned as byte-identical .aedt.txt files.
+/Verinier Ansys/base.aedt
+/Verinier Ansys/base_half_main.aedt
 
 # Runtime writer locks.
 *.lock

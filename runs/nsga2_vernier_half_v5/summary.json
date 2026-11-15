@@ -1,0 +1,14 @@
+{
+  "points": 200,
+  "solver_calls": 162,
+  "statuses": {
+    "ok": 139,
+    "operating_point_infeasible": 11,
+    "pending": 25,
+    "preparation_failed": 13,
+    "solve_failed": 8,
+    "solving": 4
+  },
+  "efficiency": "time mean of eff(t), including 2% excess loss; final electrical cycle",
+  "voltage_constraint": false
+}

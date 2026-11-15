@@ -1,0 +1,69 @@
+{
+  "source_sha256": "55000c80389f490c850ca2cad64fb2811f9aad542ba5a7df84fc365d54317163",
+  "base_variables": {
+    "Dshaft": "27.6mm",
+    "Dsin": "72.6mm",
+    "k_w_axin": "0.56",
+    "slot_d_axin": "3.5mm",
+    "slot_tipin": "4.6mm",
+    "slot_thickin": "7mm",
+    "slot_tip_angin": "0deg",
+    "tip_rotate_xin": "(Dsin/2 - slot_d_axin - slot_tipin) + Dsin * sin(slot_tip_angin) /2",
+    "tip_rotate_yin": "Dsin * cos(slot_tip_angin) /2",
+    "slot_ang_axin": "14.8deg",
+    "Ns": "6",
+    "g": "0.7mm",
+    "Dsout": "94.6mm",
+    "slot_ang_axout": "52deg",
+    "No_axout": "2",
+    "slot_d_axout": "3.9mm",
+    "k_w_axout": "0.37",
+    "Dsout_out": "138mm",
+    "sta_yoke_thickin": "6.1mm",
+    "sta_yoke_thickout": "6mm",
+    "slot_tipout": "3.6mm",
+    "slot_thickout": "16.8mm",
+    "d_pm": "3.3mm",
+    "p": "28",
+    "No_axin": "1",
+    "pm_bridin": "0.3mm",
+    "pm_bridout": "0.1mm",
+    "Lendin": "4*11mm + 2*20mm",
+    "Lend": "4*15mm + 2*40mm",
+    "Lstk": "60mm",
+    "kfill": "0.4",
+    "fs": "210Hz",
+    "Ntc": "28",
+    "Ntc_out": "34",
+    "Ip": "I_rms * sqrt(2)",
+    "gamma": "0deg",
+    "I_rms": "8.67A"
+  },
+  "workers": [
+    {
+      "worker": 1,
+      "model": "D:\\Project python\\2026\\adaptive pareto_Intermag 2027\\inspection\\vernier_pilot_20261113\\work\\vp8d7670bb52\\vp8d7670bb52.aedt",
+      "initialized": true
+    },
+    {
+      "worker": 2,
+      "model": "D:\\Project python\\2026\\adaptive pareto_Intermag 2027\\inspection\\vernier_pilot_20261113\\work\\vpacbc4277ed\\vpacbc4277ed.aedt",
+      "initialized": true
+    },
+    {
+      "worker": 3,
+      "model": "D:\\Project python\\2026\\adaptive pareto_Intermag 2027\\inspection\\vernier_pilot_20261113\\work\\vp5907352886\\vp5907352886.aedt",
+      "initialized": true
+    },
+    {
+      "worker": 4,
+      "model": "D:\\Project python\\2026\\adaptive pareto_Intermag 2027\\inspection\\vernier_pilot_20261113\\work\\vpe5a142144e\\vpe5a142144e.aedt",
+      "initialized": true
+    },
+    {
+      "worker": 5,
+      "model": "D:\\Project python\\2026\\adaptive pareto_Intermag 2027\\inspection\\vernier_pilot_20261113\\work\\vp47aaa821c9\\vp47aaa821c9.aedt",
+      "initialized": true
+    }
+  ]
+}

@@ -2,6 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Vernier (MODE in file, 5 workers)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/code/run_vernier_nsga2.py",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
       "name": "Run NSGA-II (parallel)",
       "type": "debugpy",
       "request": "launch",
