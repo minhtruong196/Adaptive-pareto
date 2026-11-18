@@ -8,16 +8,17 @@ import numpy as np
 from pathlib import Path
 
 K_FILL=0.3  # Campaign fill factor; override the saved template before every evaluation.
-CONSTRAINTS_VERSION=4  # Both winding spaces must exceed 1 mm; margins subtract 1 mm.
+CONSTRAINTS_VERSION=7  # Winding reserve 1 mm; magnet d_pm width reserve 0.1 mm.
 MESH_POLICY_VERSION=2  # Check actual operations, not only an initialization flag.
+MODEL_REVISION='vernier-half-maxwell2024.1-si-v1'
 
 BOUNDS={
-    'k_w_axin':(.1,.9,''),'k_w_axout':(.05,.48,''),
-    'slot_thickin':(3,12,'mm'),'slot_thickout':(5,28,'mm'),
-    'sta_yoke_thickout':(3,10,'mm'),'Dshaft':(16,36,'mm'),
-    'Dsin':(60,90,'mm'),'Dsout':(80,114,'mm'),
-    'slot_d_axin':(1,7.1,'mm'),'slot_d_axout':(1,6.5,'mm'),
-    'slot_ang_axin':(5,29,'deg'),'slot_ang_axout':(20,59,'deg'),'d_pm':(1,8,'mm')}
+    'k_w_axin':(.30,.80,''),'k_w_axout':(.20,.45,''),
+    'slot_thickin':(5,9,'mm'),'slot_thickout':(12,22,'mm'),
+    'sta_yoke_thickout':(4,8,'mm'),'Dshaft':(22,34,'mm'),
+    'Dsin':(66,80,'mm'),'Dsout':(88,102,'mm'),
+    'slot_d_axin':(2,5.5,'mm'),'slot_d_axout':(2,6,'mm'),
+    'slot_ang_axin':(10,22,'deg'),'slot_ang_axout':(42,56,'deg'),'d_pm':(3,7,'mm')}
 RESET=tuple(BOUNDS)+('sta_yoke_thickin','slot_tipin','slot_tipout','I_rms','kfill')
 
 
@@ -25,13 +26,38 @@ def digest(path):return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
 def number(value):
-    m=re.fullmatch(r'\s*([+-]?[\d.]+)\s*(?:mm|deg|A|Hz)?\s*',str(value))
+    m=re.fullmatch(r'\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)\s*(?:mm|deg|A|Hz)?\s*',str(value))
     if not m:raise ValueError(f'Expected a numeric model value, got {value!r}')
-    return float(m[1])
+    result=float(m[1])
+    if not math.isfinite(result):raise ValueError('Model value must be finite')
+    return result
 
 
 def source_variables(path):
-    return dict(re.findall(r"VariableProp\('([^']+)', '[^']*', '[^']*', '([^']*)'\)",Path(path).read_text(errors='replace')))
+    values=dict(re.findall(r"VariableProp\('([^']+)',\s*'[^']*',\s*'[^']*',\s*'([^']*)'\)",Path(path).read_text(errors='replace')))
+    if not values:raise ValueError(f'No model variables found in {path}')
+    return values
+
+
+def _configuration(base):
+    """Saved optimized values vary; the three physical coupling anchors do not."""
+    anchors=dict(inner_shaft_yoke_mm=round(number(base['Dshaft'])/2+number(base['sta_yoke_thickin']),8),
+                 inner_slot_depth_tip_mm=round(number(base['slot_d_axin'])+number(base['slot_tipin']),8),
+                 outer_slot_depth_tip_mm=round(number(base['slot_d_axout'])+number(base['slot_tipout']),8))
+    return dict(model_revision=MODEL_REVISION,
+                fixed_variables={n:base[n] for n in sorted(base) if n not in RESET},
+                coupling_anchors=anchors)
+
+
+def configuration_signature(source):
+    base=source if isinstance(source,dict) else source_variables(source)
+    return hashlib.sha256(json.dumps(_configuration(base),sort_keys=True).encode()).hexdigest()
+
+
+def model_identity(source):
+    """Configuration identity, stable across saved optimization points and clones."""
+    base=source if isinstance(source,dict) else source_variables(source)
+    return dict(_configuration(base),configuration_signature=configuration_signature(base))
 
 
 def design_values(base,point):
@@ -58,7 +84,7 @@ def margins(point,base):
       magnet_radial_mm=(v['Dsout']-4*v['g']-v['Dsin'])/2-v['pm_bridin']-v['pm_bridout'],
       inner_angle_deg=180/v['Ns']-v['slot_ang_axin'],outer_angle_deg=360/v['Ns']-v['slot_ang_axout'],
       inner_split_tooth_clearance_mm=v['Dsin']/2-(v['Dsin']/2-v['slot_d_axin']-v['slot_tipin'])/math.cos(math.radians(v['slot_ang_axin']))-v['slot_d_axin'],
-      magnet_overlap_deg=180/v['p']-math.degrees(math.atan(v['d_pm']/(v['Dsin']+2*v['g']))))
+      magnet_width_reserve_mm=(v['Dsin']+2*v['g'])*math.tan(math.radians(180/v['p']))-v['d_pm']-0.1)
 
 
 def make_plan(n,seed,bounds,base):
@@ -81,26 +107,33 @@ def make_plan(n,seed,bounds,base):
 
 def atomic_json(path,data):
     path=Path(path);tmp=path.with_suffix('.tmp')
+    path.parent.mkdir(parents=True,exist_ok=True)
     tmp.write_text(json.dumps(data,indent=2,allow_nan=False),encoding='utf-8');tmp.replace(path)
 
 
-def worker_pool(run_dir,source,source_hash,legacy_manifest,prefix="worker"):
+def worker_pool(run_dir,source,source_hash=None,legacy_manifest=None,prefix="worker"):
+    """Create a fresh owned pool; never adopt historical campaign worker models."""
+    run_dir=Path(run_dir).resolve();source=Path(source).resolve()
+    source_hash=source_hash or digest(source)
+    identity=model_identity(source)
     path=Path(run_dir)/'workers.json'
     if path.exists():pool=json.loads(path.read_text(encoding='utf-8'))
-    elif Path(legacy_manifest).exists():
-        pool=json.loads(Path(legacy_manifest).read_text(encoding='utf-8'))
-        atomic_json(path,pool)
     else:
-        pool=dict(source_sha256=source_hash,base_variables=source_variables(source),workers=[])
+        pool=dict(source_sha256=source_hash,model_identity=identity,
+                  source=str(source),base_variables=source_variables(source),workers=[])
         for i in range(1,6):
             model=Path(run_dir)/'work'/f'{prefix}_{i:02d}'/f'{prefix}_{i:02d}.aedt'
+            if model.resolve()==source:raise ValueError('Worker must not overwrite the source model')
             if model.exists():raise ValueError(f'Unregistered model exists: {model}')
             model.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,model)
             pool['workers'].append(dict(worker=i,model=str(model),initialized=False))
         atomic_json(path,pool)
-    if pool['source_sha256']!=source_hash:raise ValueError('Source fingerprint changed; do not overwrite existing worker models')
+    if pool.get('model_identity')!=identity:raise ValueError('Source configuration changed; select a new worker pool')
     if len(pool['workers'])!=5 or not all(Path(w['model']).is_file() for w in pool['workers']):
         raise ValueError('Incomplete worker pool; check workers.json')
+    models=[Path(w['model']).resolve() for w in pool['workers']]
+    if len(set(models))!=5 or any(m==source or not m.is_relative_to(run_dir/'work') for m in models):
+        raise ValueError('Worker pool does not own five independent project paths')
     return pool
 
 
@@ -180,6 +213,7 @@ class InvalidOperatingPoint(ValueError):
 
 
 def check_operating_metrics(torque,eta,pf):
+    if not all(math.isfinite(v) for v in (torque,eta,pf)):raise InvalidOperatingPoint('Non-finite operating metrics')
     if torque<=0:raise InvalidOperatingPoint(f'Nonpositive mean torque: {torque:.9g} Nm; motoring objectives require torque > 0')
     if not 0<eta<1:raise InvalidOperatingPoint(f'Mean efficiency outside (0,1): {eta:.9g}')
     if not 0<pf<1:raise InvalidOperatingPoint(f'Power factor outside (0,1): {pf:.9g}')

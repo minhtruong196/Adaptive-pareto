@@ -1,4 +1,7 @@
-"""Shared real-FEA controller and Direct NSGA-II. No ANN or surrogate model."""
+"""Append-only real-FEA adapter; contains no optimization algorithm.
+
+COM is imported only inside run(). Importing this module never opens Ansys.
+"""
 import csv
 import hashlib
 import json
@@ -10,7 +13,8 @@ from datetime import datetime,timezone
 from pathlib import Path
 
 from vernier_model import (digest,source_variables,worker_pool,make_plan,atomic_json,
-                           prepare,read_solution,K_FILL,CONSTRAINTS_VERSION,MESH_POLICY_VERSION,InvalidOperatingPoint)
+                           prepare,read_solution,K_FILL,CONSTRAINTS_VERSION,MESH_POLICY_VERSION,
+                           InvalidOperatingPoint,model_identity)
 
 
 def utc():return datetime.now(timezone.utc).isoformat()
@@ -36,33 +40,48 @@ class Ledger:
             status TEXT,fea_started INTEGER DEFAULT 0,started TEXT,finished TEXT,data TEXT);
           CREATE TABLE IF NOT EXISTS waveforms (attempt_id INTEGER,sample INTEGER,time_s REAL,data TEXT,
             PRIMARY KEY(attempt_id,sample));''')
-        old=self.db.execute("SELECT value FROM meta WHERE key='fingerprint'").fetchone()
-        if old and old[0]!=fingerprint:
-            self.db.close();raise ValueError('Run fingerprint changed: restore settings or select another RUN_DIR')
-        self.db.execute("INSERT OR IGNORE INTO meta VALUES ('fingerprint',?)",(fingerprint,))
-        for i,p in enumerate(points,1):
-            old=self.db.execute('SELECT point FROM points WHERE id=?',(i,)).fetchone()
-            encoded=json.dumps(p,sort_keys=True)
-            if old and old[0]!=encoded:self.db.close();raise ValueError('Saved DOE plan changed')
-            self.db.execute('INSERT OR IGNORE INTO points VALUES (?,?,?,?)',(i,encoded,'pending','{}'))
+        try:
+            old=self.db.execute("SELECT value FROM meta WHERE key='fingerprint'").fetchone()
+            if old and old[0]!=fingerprint:
+                raise ValueError('Run fingerprint changed: restore settings or select another RUN_DIR')
+            encoded_points=[json.dumps(p,sort_keys=True,allow_nan=False) for p in points]
+            if len(set(encoded_points))!=len(encoded_points):raise ValueError('Saved DOE plan contains duplicate points')
+            existing=self.db.execute('SELECT id,point FROM points ORDER BY id').fetchall()
+            if len(existing)>len(points) or any(i!=idx or raw!=encoded_points[idx-1] for idx,(i,raw) in enumerate(existing,1)):
+                raise ValueError('Saved DOE plan changed; only appending new points is allowed')
+            self.db.execute("INSERT OR IGNORE INTO meta VALUES ('fingerprint',?)",(fingerprint,))
+            for i,encoded in enumerate(encoded_points,1):
+                self.db.execute('INSERT OR IGNORE INTO points VALUES (?,?,?,?)',(i,encoded,'pending','{}'))
+            self._interrupt_open_attempts()
+            self.db.commit()
+        except BaseException:
+            self.db.rollback();self.db.close();raise
+
+    def _interrupt_open_attempts(self):
+        self.db.execute("UPDATE points SET status='interrupted',data=(SELECT data FROM attempts WHERE point_id=points.id ORDER BY id DESC LIMIT 1) WHERE status IN ('preparing','solving')")
         self.db.execute("UPDATE attempts SET status='interrupted',finished=? WHERE status IN ('preparing','solving')",(utc(),))
-        self.db.execute("UPDATE points SET status='pending' WHERE status IN ('preparing','solving')")
-        self.db.commit()
 
     def pending(self,retry_failed=False,fea=True):
-        done={'ok'} if fea else {'ok','geometry_ok'}
-        return [i for i,status in self.db.execute('SELECT id,status FROM points ORDER BY id')
-                if status not in done and (retry_failed or status in ('pending','geometry_ok'))]
+        # Compatibility arguments never authorize terminal-slot retries/refill.
+        return [row[0] for row in self.db.execute("SELECT id FROM points WHERE status='pending' ORDER BY id")]
 
     def start(self,point,worker,data):
-        cur=self.db.execute('INSERT INTO attempts (point_id,worker,status,started,data) VALUES (?,?,?,?,?)',
-                            (point,worker,'preparing',utc(),json.dumps(data)))
-        self.db.execute("UPDATE points SET status='preparing' WHERE id=?",(point,));self.db.commit()
-        return cur.lastrowid
+        with self.db:
+            changed=self.db.execute("UPDATE points SET status='preparing' WHERE id=? AND status='pending'",(point,))
+            if changed.rowcount!=1:raise ValueError('Point is absent or already attempted; terminal slots cannot be retried')
+            cur=self.db.execute('INSERT INTO attempts (point_id,worker,status,started,data) VALUES (?,?,?,?,?)',
+                                (point,worker,'preparing',utc(),json.dumps(data,allow_nan=False)))
+            return cur.lastrowid
 
-    def mark_solving(self,attempt):
-        self.db.execute("UPDATE attempts SET status='solving',fea_started=1 WHERE id=?",(attempt,))
-        self.db.execute("UPDATE points SET status='solving' WHERE id=(SELECT point_id FROM attempts WHERE id=?)",(attempt,));self.db.commit()
+    def mark_solving(self,attempt,max_calls=None):
+        with self.db:
+            # Acquire the write lock before reading the cumulative solver budget.
+            self.db.execute('UPDATE meta SET value=value WHERE key=\'fingerprint\'')
+            state=self.db.execute('SELECT status,fea_started FROM attempts WHERE id=?',(attempt,)).fetchone()
+            if state!=('preparing',0):raise ValueError('Attempt is absent or has already started')
+            if max_calls is not None and self.solver_calls()>=max_calls:raise RuntimeError('Solver-call budget exhausted')
+            self.db.execute("UPDATE attempts SET status='solving',fea_started=1 WHERE id=?",(attempt,))
+            self.db.execute("UPDATE points SET status='solving' WHERE id=(SELECT point_id FROM attempts WHERE id=?)",(attempt,))
 
     def finish(self,point,status,data,attempt=None):
         encoded=json.dumps(data,allow_nan=False)
@@ -71,18 +90,25 @@ class Ledger:
         self.db.commit()
 
     def solver_calls(self):return self.db.execute('SELECT COALESCE(SUM(fea_started),0) FROM attempts').fetchone()[0]
-    def close(self):self.db.close()
+    def close(self):
+        self._interrupt_open_attempts();self.db.commit();self.db.close()
 
 
 @contextmanager
 def run_lock(folder,name='.runner.lock'):
-    import msvcrt
+    import os
     path=Path(folder)/name;path.parent.mkdir(parents=True,exist_ok=True)
     f=path.open('a+b')
     try:
         if path.stat().st_size==0:f.write(b'0');f.flush()
         f.seek(0)
-        try:msvcrt.locking(f.fileno(),msvcrt.LK_NBLCK,1)
+        try:
+            if os.name=='nt':
+                import msvcrt
+                msvcrt.locking(f.fileno(),msvcrt.LK_NBLCK,1)
+            else:
+                import fcntl
+                fcntl.flock(f.fileno(),fcntl.LOCK_EX|fcntl.LOCK_NB)
         except OSError:raise RuntimeError('This DOE is already running; do not start a second VS Code run')
         yield
     finally:f.close()
@@ -98,7 +124,7 @@ def export_results(ledger):
         rows.append(dict(point_id=i,status=status,**point,**{k:r.get(k) for k in [
           'average_torque_nm','power_factor','efficiency_pct','i_rms_a','j_in_a_mm2',
           'j_out_a_mm2','solve_elapsed_s','area_in_mm2','area_out_mm2','error']}))
-    keys=list(rows[0])
+    keys=list(rows[0]) if rows else ['point_id','status']
     temp=ledger.folder/'results.csv.tmp'
     with temp.open('w',encoding='utf-8-sig',newline='') as f:
         w=csv.DictWriter(f,keys);w.writeheader();w.writerows(rows)
@@ -129,22 +155,27 @@ def export_results(ledger):
 
 
 def run(settings,plan_override=None):
-    import win32com.client
     import openpyxl  # Fail before touching Ansys if the export dependency is missing.
     source=Path(settings['source']).resolve();folder=Path(settings['run_dir']).resolve()
     workers=int(settings['workers']);fea=settings['mode']=='fea'
     if settings['mode'] not in ('fea','geometry') or not 1<=workers<=5:raise ValueError('Use mode fea/geometry and 1..5 workers')
     sha=digest(source);base=source_variables(source)
-    spec=dict(source_sha256=sha,n=settings['samples'],seed=settings['seed'],bounds=settings['bounds'],metrics_version=1,kfill=K_FILL,constraints_version=CONSTRAINTS_VERSION,mesh_policy_version=MESH_POLICY_VERSION)
+    identity=model_identity(source)
+    spec=dict(model_identity=identity,n=settings['samples'],seed=settings['seed'],bounds=settings['bounds'],metrics_version=1,kfill=K_FILL,constraints_version=CONSTRAINTS_VERSION,mesh_policy_version=MESH_POLICY_VERSION)
     fp=plan_override['fingerprint'] if plan_override else hashlib.sha256(json.dumps(spec,sort_keys=True).encode()).hexdigest()
-    with run_lock(folder),run_lock(Path(settings['legacy_workers']).parent,'.worker_pool.lock'):
+    pool_folder=Path(settings.get('worker_pool_dir',folder)).resolve()
+    with run_lock(folder),run_lock(pool_folder,'.worker_pool.lock'):
         plan_path=folder/'plan.json'
         if plan_override is not None:
             plan=plan_override
             if plan_path.exists():
                 old=json.loads(plan_path.read_text(encoding='utf-8'))
-                if old['fingerprint']!=fp or old['points']!=plan['points'][:len(old['points'])]:
-                    raise ValueError('NSGA-II evaluation archive changed')
+                # Raw bytes are provenance; configuration identity governs compatibility.
+                compatible_old={k:v for k,v in old['settings'].items() if k!='source_sha256'}
+                # Compare JSON representations: tuple bounds reload as lists.
+                compatible_new=json.loads(json.dumps({k:v for k,v in plan['settings'].items() if k!='source_sha256'},allow_nan=False))
+                if old['fingerprint']!=fp or compatible_old!=compatible_new or old['points']!=plan['points'][:len(old['points'])]:
+                    raise ValueError('Evaluation archive changed; only appending points is allowed')
             atomic_json(plan_path,plan)
         elif plan_path.exists():
             plan=json.loads(plan_path.read_text(encoding='utf-8'))
@@ -153,13 +184,23 @@ def run(settings,plan_override=None):
             plan=dict(fingerprint=fp,settings=spec,points=make_plan(settings['samples'],settings['seed'],settings['bounds'],base),
                       sampling='feasibility-filtered LHS; filtering changes strict marginal stratification')
             atomic_json(plan_path,plan)
-        app=win32com.client.Dispatch('Ansoft.ElectronicsDesktop.2024.1');desk=app.GetAppDesktop()
-        if desk.AreThereSimulationsRunning():raise RuntimeError('Ansys is already solving. Wait for it to finish before resuming this DOE.')
-        pool=worker_pool(Path(settings.get('worker_pool_dir',folder)),source,sha,settings['legacy_workers'],
-                         prefix=settings.get('worker_prefix','worker'))
-        if pool['base_variables']!=base:raise ValueError('Worker base snapshot differs from saved source')
         ledger=Ledger(folder,fp,plan['points']);opened={};active={};stop=False;stop_reason=None
         todo=ledger.pending(settings.get('retry_failed',False),fea)
+        # Repeated completed calls and exhausted budgets must not touch COM.
+        if not todo or (fea and ledger.solver_calls()>=settings.get('max_fea_calls',float('inf'))):
+            budget=bool(todo)
+            try:export_results(ledger)
+            finally:ledger.close()
+            return dict(stopped=budget,reason='budget' if budget else None)
+        try:
+            import win32com.client
+            app=win32com.client.Dispatch('Ansoft.ElectronicsDesktop.2024.1');desk=app.GetAppDesktop()
+            if desk.AreThereSimulationsRunning():raise RuntimeError('Ansys is already solving. Wait for it to finish before resuming this DOE.')
+            pool=worker_pool(pool_folder,source,sha,settings.get('legacy_workers'),
+                             prefix=settings.get('worker_prefix','worker'))
+            if pool['model_identity']!=identity:raise ValueError('Worker configuration differs from saved source')
+        except BaseException:
+            ledger.close();raise
         print(f'DOE: {len(todo)} pending / {len(plan["points"])} planned; {workers} workers; mode={settings["mode"]}',flush=True)
         print(f'Output: {folder}\nCtrl+C: stop submitting new points and finish current solves.',flush=True)
         def export():
@@ -177,12 +218,12 @@ def run(settings,plan_override=None):
                         r=dict(point_id=point,worker=wid,requested_variables=requested,source_sha256=sha)
                         aid=ledger.start(point,wid,r)
                         try:
-                            project,design,extra=prepare(desk,worker,pool,folder,requested,settings['design'])
+                            project,design,extra=prepare(desk,worker,pool,pool_folder,requested,settings['design'])
                             opened[project.GetName()]=project;r.update(extra)
                             if not fea:
                                 ledger.finish(point,'geometry_ok',r,aid);export();print(f'GEOMETRY {point}: ok',flush=True);continue
                             offset=list(desk.GetMessages(project.GetName(),settings['design'],0))
-                            started=time.monotonic();ledger.mark_solving(aid)
+                            started=time.monotonic();ledger.mark_solving(aid,max_calls=settings.get('max_fea_calls'))
                             # Register before the external call, so interruption cannot lose ownership.
                             active[wid]=(point,aid,project,design,r,offset,started)
                             design.Analyze('Setup1',False)
@@ -234,24 +275,24 @@ def run(settings,plan_override=None):
             export()
             print('STOPPED' if stop else 'FINISHED',dict(ledger.db.execute('SELECT status,count(*) FROM points GROUP BY status')),flush=True)
         finally:
-            # Never close or alter a project with an active simulation.
-            if not active:
-                for name in opened:desk.CloseProject(name)
-                if 'base' in list(desk.GetProjectList()):desk.SetActiveProject('base')
-            ledger.close()
-            if digest(source)!=sha:raise RuntimeError('Source model changed during this run')
+            try:
+                # Terminalize every consumed slot even if Ctrl+C occurs during CAD/RPC.
+                # Active remote solves remain owned/open; never automatically retry them.
+                for wid,(point,aid,project,design,r,offset,started) in active.items():
+                    r['error']='Controller detached from active solve; inspect Ansys before any new run'
+                    ledger.finish(point,'interrupted',r,aid)
+                ledger._interrupt_open_attempts();ledger.db.commit()
+                export()
+                # Never close or alter a project with an active simulation.
+                if not active:
+                    for name in opened:desk.CloseProject(name)
+            finally:
+                ledger.close()
+                if digest(source)!=sha:raise RuntimeError('Source model changed during this run')
         return dict(stopped=stop,reason=stop_reason)
 
 
 OBJECTIVES=('average_torque_nm','power_factor','efficiency_pct')
-
-
-def objective_arrays(rows):
-    import numpy as np
-    valid=[r.get('status')=='ok' and all(k in r and r[k] is not None for k in OBJECTIVES) for r in rows]
-    # Failure penalties are algorithm inputs only; absent FEA outputs stay absent in the ledger.
-    return (np.array([[-float(r[k]) for k in OBJECTIVES] if ok else [0.,0.,0.] for r,ok in zip(rows,valid)]),
-            np.array([[0.] if ok else [1.] for ok in valid]))
 
 
 def pareto_rows(rows):
@@ -273,92 +314,5 @@ def export_pareto(folder):
     with tmp.open('w',encoding='utf-8-sig',newline='') as f:
         w=csv.DictWriter(f,fields,extrasaction='ignore');w.writeheader();w.writerows(front)
     tmp.replace(Path(folder)/'pareto.csv')
-    atomic_json(Path(folder)/'pareto.json',dict(source='real FEA only; independent direct NSGA-II reference, not Pareto ground truth',
+    atomic_json(Path(folder)/'pareto.json',dict(source='actual valid FEA only',
       solver_calls=calls,valid_designs=sum(r.get('status')=='ok' for r in rows),pareto=front))
-
-
-def run_direct(settings,evaluate_batch=None):
-    """Checkpointed pymoo ask/tell; each unique design is evaluated by real FEA."""
-    import dill
-    import random
-    import numpy as np
-    from pymoo.algorithms.moo.nsga2 import NSGA2
-    from pymoo.core.problem import Problem
-    from pymoo.operators.crossover.sbx import SBX
-    from pymoo.operators.mutation.pm import PM
-    population,generations=settings['population'],settings['generations']
-    if population<4 or generations<1 or settings['max_fea_calls']<1:raise ValueError('population>=4, generations>=1 and positive FEA budget required')
-    folder=Path(settings['run_dir']);folder.mkdir(parents=True,exist_ok=True)
-    bounds=settings['bounds'];names=list(bounds);base=source_variables(settings['source'])
-    sha=digest(settings['source'])
-    spec=dict(source_sha256=sha,bounds=bounds,population=population,generations=generations,seed=settings['seed'],metrics_version=1,kfill=K_FILL,decision_precision=12,constraints_version=CONSTRAINTS_VERSION,mesh_policy_version=MESH_POLICY_VERSION)
-    fp=hashlib.sha256(json.dumps(spec,sort_keys=True).encode()).hexdigest()
-    path=folder/'nsga2_checkpoint.dill'
-
-    def save(state):
-        state['numpy_rng']=np.random.get_state();state['python_rng']=random.getstate()
-        temp=path.with_suffix('.tmp')
-        with temp.open('wb') as f:dill.dump(state,f)
-        temp.replace(path)
-
-    with run_lock(folder,'.nsga2.lock'):
-        if path.exists():
-            # Only load checkpoints created by this local project/run.
-            with path.open('rb') as f:state=dill.load(f)
-            if state['fingerprint']!=fp:raise ValueError('NSGA-II checkpoint fingerprint changed; restore settings or select another RUN_DIR')
-            np.random.set_state(state['numpy_rng']);random.setstate(state['python_rng'])
-        else:
-            if (folder/'evaluations.sqlite').exists():raise ValueError('Existing evaluations without NSGA-II checkpoint; use a separate RUN_DIR')
-            initial=make_plan(population,settings['seed'],bounds,base)
-            initial_x=np.array([[p[n] for n in names] for p in initial])
-            problem=Problem(n_var=len(names),n_obj=3,n_ieq_constr=1,
-               xl=np.array([bounds[n][0] for n in names]),xu=np.array([bounds[n][1] for n in names]))
-            algorithm=NSGA2(pop_size=population,sampling=initial_x,
-              crossover=SBX(prob=.9,eta=15),mutation=PM(eta=20),eliminate_duplicates=True)
-            algorithm.setup(problem,termination=('n_gen',generations),seed=settings['seed'],verbose=False)
-            state=dict(fingerprint=fp,settings=spec,algorithm=algorithm,pending=None,points=[],ids=None,completed_generations=0)
-            save(state)
-        print(f'DIRECT NSGA-II: population={population}, generations={generations}, FEA budget={settings["max_fea_calls"]}, workers={settings["workers"]}',flush=True)
-        reason='generations'
-        try:
-            while state['pending'] is not None or state['algorithm'].has_next():
-                algorithm=state['algorithm']
-                if state['pending'] is None:
-                    pending=algorithm.ask()
-                    if pending is None or len(pending)==0:reason='no_offspring';break
-                    x=np.array([[float(f'{v:.12g}') for v in row] for row in pending.get('X')]);pending.set('X',x)
-                    lookup={tuple(p[n] for n in names):i for i,p in enumerate(state['points'],1)}
-                    ids=[]
-                    for row in x:
-                        key=tuple(map(float,row))
-                        if key not in lookup:
-                            state['points'].append(dict(zip(names,key)));lookup[key]=len(state['points'])
-                        ids.append(lookup[key])
-                    state['pending'],state['ids']=pending,ids
-                    save(state)  # Persist exact offspring, RNG and IDs before any solver call.
-                if evaluate_batch is not None:
-                    rows=evaluate_batch([state['points'][i-1] for i in state['ids']])
-                else:
-                    shared=dict(settings,samples=len(state['points']),mode='fea',retry_failed=False)
-                    plan=dict(fingerprint=fp,settings=spec,points=state['points'],sampling='NSGA-II candidates; initial feasibility-filtered LHS')
-                    outcome=run(shared,plan_override=plan)
-                    db=sqlite3.connect(folder/'evaluations.sqlite')
-                    available={i:dict(json.loads(data),status=status) for i,status,data in db.execute('SELECT id,status,data FROM points')}
-                    db.close()
-                    export_pareto(folder)
-                    if outcome['stopped']:reason=outcome['reason'];break
-                    rows=[available[i] for i in state['ids']]
-                f,g=objective_arrays(rows);pending=state['pending']
-                pending.set('F',f);pending.set('G',g)
-                for individual in pending:individual.evaluated.update(['F','G'])
-                algorithm.evaluator.n_eval+=len(pending)
-                algorithm.tell(infills=pending)
-                state['pending']=None;state['ids']=None;state['completed_generations']+=1
-                save(state)
-                print(f'GENERATION {state["completed_generations"]}/{generations}; unique designs={len(state["points"])}',flush=True)
-        finally:
-            save(state)
-            if evaluate_batch is None and (folder/'evaluations.sqlite').exists():export_pareto(folder)
-        result=dict(stop_reason=reason,completed_generations=state['completed_generations'],unique_designs=len(state['points']))
-        atomic_json(folder/'nsga2_summary.json',result)
-        return result

@@ -1,0 +1,149 @@
+{
+  "method": "adaptive",
+  "synthetic": false,
+  "evaluation_slots": 300,
+  "actual_solver_calls": 300,
+  "budget": {
+    "total": 300,
+    "train": 210,
+    "val": 60,
+    "test": 30,
+    "pool": 270,
+    "stages": [
+      {
+        "name": "Initial",
+        "kind": "initial",
+        "verify": 0,
+        "doe_train": 70,
+        "val": 20,
+        "cumulative_train": 70,
+        "cumulative_val": 20
+      },
+      {
+        "name": "G1",
+        "kind": "G",
+        "verify": 5,
+        "doe_train": 30,
+        "val": 10,
+        "cumulative_train": 105,
+        "cumulative_val": 30
+      },
+      {
+        "name": "G2",
+        "kind": "G",
+        "verify": 5,
+        "doe_train": 30,
+        "val": 10,
+        "cumulative_train": 140,
+        "cumulative_val": 40
+      },
+      {
+        "name": "L1",
+        "kind": "L",
+        "verify": 5,
+        "doe_train": 30,
+        "val": 10,
+        "cumulative_train": 175,
+        "cumulative_val": 50
+      },
+      {
+        "name": "L2",
+        "kind": "L",
+        "verify": 5,
+        "doe_train": 30,
+        "val": 10,
+        "cumulative_train": 210,
+        "cumulative_val": 60
+      }
+    ]
+  },
+  "roles_planned": {
+    "train": 210,
+    "val": 60,
+    "test": 30
+  },
+  "roles_valid": {
+    "train": 204,
+    "val": 57,
+    "test": 30
+  },
+  "statuses": {
+    "ok": 291,
+    "solve_failed": 9
+  },
+  "pool_valid": 261,
+  "final_outcomes": {
+    "planned": 30,
+    "statuses": {
+      "ok": 30
+    }
+  },
+  "final_metrics": {
+    "n": 30,
+    "objectives": {
+      "average_torque_nm": {
+        "n": 30,
+        "mae": 0.348769359851648,
+        "rmse": 0.4555911442136352,
+        "mape": 4.998215676025143,
+        "r2": 0.9401123149491198,
+        "bias": 0.1667230287159602,
+        "mean_relative_error_pct": 4.998215676025143,
+        "mean_signed_error": 0.1667230287159602,
+        "overpredicted_n": 18,
+        "underpredicted_n": 12,
+        "zero_actual_n": 0,
+        "max_relative_error_pct": 17.893640490270442,
+        "max_absolute_error": 1.5742222021781558
+      },
+      "power_factor": {
+        "n": 30,
+        "mae": 0.029060500466739258,
+        "rmse": 0.03332723149821766,
+        "mape": 4.120033706569346,
+        "r2": 0.9125858284773404,
+        "bias": -0.02277285811780769,
+        "mean_relative_error_pct": 4.120033706569346,
+        "mean_signed_error": -0.02277285811780769,
+        "overpredicted_n": 4,
+        "underpredicted_n": 26,
+        "zero_actual_n": 0,
+        "max_relative_error_pct": 8.286106605317208,
+        "max_absolute_error": 0.05963958802253855
+      },
+      "efficiency_pct": {
+        "n": 30,
+        "mae": 0.43612088716495095,
+        "rmse": 0.5504935061342692,
+        "mape": 0.48372534074970175,
+        "r2": 0.5806851319472321,
+        "bias": 0.004211106502491191,
+        "mean_relative_error_pct": 0.48372534074970175,
+        "mean_signed_error": 0.004211106502491191,
+        "overpredicted_n": 14,
+        "underpredicted_n": 16,
+        "zero_actual_n": 0,
+        "max_relative_error_pct": 1.5294918833240245,
+        "max_absolute_error": 1.3305184929490679
+      }
+    }
+  },
+  "hv": {
+    "scale": {
+      "average_torque_nm": 10.0,
+      "power_factor": 1.0,
+      "efficiency_pct": 100.0
+    },
+    "reference": [
+      0,
+      0,
+      0
+    ],
+    "pool": 0.7299114414040083,
+    "final_only": 0.7473908456640491,
+    "archive": 0.760458261182851,
+    "final_gain": 0.03054681977884266
+  },
+  "final_never_trained": true,
+  "note": "Final points are optimization-selected verification, not a random global test. No failure refill."
+}

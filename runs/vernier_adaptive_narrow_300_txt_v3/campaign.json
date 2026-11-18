@@ -1,0 +1,191 @@
+{
+  "fingerprint": "b069f0781319ee8ea937f547061f4119dce23e3723e9b63f88d53cfc2ffb424f",
+  "settings": {
+    "method": "adaptive",
+    "source": "D:\\Project python\\2026\\adaptive pareto_Intermag 2027\\inspection\\vernier_pilot_20261113\\work\\test_point\\base_half.aedt",
+    "evaluations": 300,
+    "seed": 17,
+    "bounds": {
+      "k_w_axin": [
+        0.3,
+        0.8,
+        ""
+      ],
+      "k_w_axout": [
+        0.2,
+        0.45,
+        ""
+      ],
+      "slot_thickin": [
+        5,
+        9,
+        "mm"
+      ],
+      "slot_thickout": [
+        12,
+        22,
+        "mm"
+      ],
+      "sta_yoke_thickout": [
+        4,
+        8,
+        "mm"
+      ],
+      "Dshaft": [
+        22,
+        34,
+        "mm"
+      ],
+      "Dsin": [
+        66,
+        80,
+        "mm"
+      ],
+      "Dsout": [
+        88,
+        102,
+        "mm"
+      ],
+      "slot_d_axin": [
+        2,
+        5.5,
+        "mm"
+      ],
+      "slot_d_axout": [
+        2,
+        6,
+        "mm"
+      ],
+      "slot_ang_axin": [
+        10,
+        22,
+        "deg"
+      ],
+      "slot_ang_axout": [
+        42,
+        56,
+        "deg"
+      ],
+      "d_pm": [
+        3,
+        7,
+        "mm"
+      ]
+    },
+    "design": "VM_6_28",
+    "workers": 5,
+    "worker_pool_dir": "D:\\Project python\\2026\\adaptive pareto_Intermag 2027\\runs\\vernier_narrow_workers_v1",
+    "worker_prefix": "vernier_narrow",
+    "timeout_minutes": 30,
+    "epochs": 500,
+    "min_checkpoint_epoch": 300,
+    "cv_folds": 5,
+    "pareto_population": 100,
+    "pareto_generations": 100,
+    "local_groups": 4,
+    "local_padding": 0.01,
+    "hv_scale": [
+      10.0,
+      1.0,
+      100.0
+    ],
+    "dry_run": false,
+    "protocol": "txt_legacy_sampling_val_70_20_10_v3",
+    "source_sha256": "ab2f13c73247f915ff30553df27778f0c1f0eb95df09409a77ac80482abbb106",
+    "source_identity": {
+      "model_revision": "vernier-half-maxwell2024.1-si-v1",
+      "fixed_variables": {
+        "Dsout_out": "138mm",
+        "Ip": "I_rms * sqrt(2)",
+        "Lend": "4*15mm + 2*40mm",
+        "Lendin": "4*11mm + 2*20mm",
+        "Lstk": "60mm",
+        "No_axin": "1",
+        "No_axout": "2",
+        "Ns": "6",
+        "Ntc": "28",
+        "Ntc_out": "34",
+        "fs": "210Hz",
+        "g": "0.7mm",
+        "gamma": "0deg",
+        "p": "28",
+        "pm_bridin": "0.2mm",
+        "pm_bridout": "0.2mm",
+        "slot_tip_angin": "0deg",
+        "theta_r": "360deg/p/2",
+        "tip_rotate_xin": "(Dsin/2 - slot_d_axin - slot_tipin) + Dsin * sin(slot_tip_angin) /2",
+        "tip_rotate_yin": "Dsin * cos(slot_tip_angin) /2"
+      },
+      "coupling_anchors": {
+        "inner_shaft_yoke_mm": 19.9,
+        "inner_slot_depth_tip_mm": 8.1,
+        "outer_slot_depth_tip_mm": 7.5
+      },
+      "configuration_signature": "65609cedd9ffa863e5ad648f755087ec8258fdfa4ad556b0fa43af36b5d3d55d"
+    },
+    "kfill": 0.3,
+    "constraints_version": 7,
+    "mesh_policy_version": 2,
+    "budget": {
+      "total": 300,
+      "train": 210,
+      "val": 60,
+      "test": 30,
+      "pool": 270,
+      "stages": [
+        {
+          "name": "Initial",
+          "kind": "initial",
+          "verify": 0,
+          "doe_train": 70,
+          "val": 20,
+          "cumulative_train": 70,
+          "cumulative_val": 20
+        },
+        {
+          "name": "G1",
+          "kind": "G",
+          "verify": 5,
+          "doe_train": 30,
+          "val": 10,
+          "cumulative_train": 105,
+          "cumulative_val": 30
+        },
+        {
+          "name": "G2",
+          "kind": "G",
+          "verify": 5,
+          "doe_train": 30,
+          "val": 10,
+          "cumulative_train": 140,
+          "cumulative_val": 40
+        },
+        {
+          "name": "L1",
+          "kind": "L",
+          "verify": 5,
+          "doe_train": 30,
+          "val": 10,
+          "cumulative_train": 175,
+          "cumulative_val": 50
+        },
+        {
+          "name": "L2",
+          "kind": "L",
+          "verify": 5,
+          "doe_train": 30,
+          "val": 10,
+          "cumulative_train": 210,
+          "cumulative_val": 60
+        }
+      ]
+    },
+    "code_sha256": {
+      "vernier_campaign.py": "c88af10eafb8d0e798ebcec506b16fc35e1091a527acf2a2c0e4aad72db81a21",
+      "vernier_mlp.py": "9915dfaab32ea4bf0931f0d22e4ced579d39fa898c75eb30f73f4ba83e6c9917",
+      "vernier_model.py": "e9c3f95e814887dc55019a1a8b93c23a377bbb1d372cc549a0c0feec60a6fc2d",
+      "vernier_optimize.py": "3d1148efefad51fcd46b3d798716b6c1d908318f255bd1ff39dfdc045e6a388f",
+      "vernier_protocol.py": "95348164a8a283554d46869c5701cb327081e2b7a2f197033b988b1125802f0c"
+    }
+  }
+}

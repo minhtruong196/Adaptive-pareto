@@ -1,136 +1,55 @@
-DUAL-STATOR VERNIER MOTOR — GEOMETRIC CONSTRAINTS AND DESIGN VARIABLES
-English translation of Contrain.docx for Codex
+VERNIER — DỮ KIỆN MODEL VÀ RÀNG BUỘC GIỮ LẠI
+Cập nhật 17/11/2026 sau khi gỡ code và kết quả các chiến dịch cũ.
 
-PURPOSE AND MODEL CONTEXT
+Đây là ghi chú vật lý/hình học, không phải thuật toán tối ưu. Model half để clone nằm đúng tại inspection/vernier_pilot_20261113/work/test_point/base_half.aedt. Các model backup và code ghi lệnh nằm trong Verinier Ansys. Không tự chuyển vị trí nguồn hoặc sửa backup main khi thử nghiệm.
 
-This document describes constraints and candidate design variables for my dual-stator Vernier motor model in Ansys. Because the model has two stators, it has many variables. I built the parameterization myself, so it is less systematic than Motor-CAD's ratio-based parameterization.
+MIỀN 13 BIẾN ĐÃ CHỐT
 
-Please inspect and discuss any unclear dependencies before implementing them. Do not silently assume that all variables are independent.
+k_w_axin              0.30–0.80
+k_w_axout             0.20–0.45
+slot_thickin          5–9 mm
+slot_thickout         12–22 mm
+sta_yoke_thickout     4–8 mm
+Dshaft                22–34 mm
+Dsin                  66–80 mm
+Dsout                 88–102 mm
+slot_d_axin           2–5.5 mm
+slot_d_axout          2–6 mm
+slot_ang_axin         10–22 deg
+slot_ang_axout        42–56 deg
+d_pm                  3–7 mm
 
-1. CONSTRAINTS AND COUPLED VARIABLES
+Các biến không chỉ định tối ưu giữ theo model nguồn. Miền hình hộp không thay thế việc kiểm tra CAD/mesh và các ràng buộc ghép.
 
-1) Dshaft / inner stator yoke coupling
+QUAN HỆ BIẾN PHỤ THUỘC
 
-   When Dshaft increases by 2 units, sta_yoke_thickin must decrease by 1 unit. Other model variables depend on Dshaft, and sta_yoke_thickin needs to compensate for the geometric change. In physical terms, a larger shaft diameter requires a thinner inner-stator yoke in this model.
+1. Dshaft tăng2 mm thì sta_yoke_thickin giảm1 mm; giữ Dshaft/2 + sta_yoke_thickin = 19.9 mm theo model hiện có. sta_yoke trong ghi chú cũ nghĩa là sta_yoke_thickin. Gông trong phải >0.
+2. slot_d_axin + slot_tipin = 8.1 mm; slot_d_axout + slot_tipout = 7.5 mm. Các depth/tip đều phải >0.
 
-   When changing Dshaft, update sta_yoke_thickin automatically and enforce:
+BẤT ĐẲNG THỨC HÌNH HỌC
 
-       sta_yoke_thickin > 0
+- Khoang dây trong >1 mm:
+  (Dsin/2 - slot_d_axin - slot_tipin) - (Dshaft/2 + sta_yoke_thickin) > 1 mm.
+- Khoang dây ngoài >1 mm:
+  (Dsout_out/2 - sta_yoke_thickout) - (Dsout/2 + slot_d_axout + slot_tipout) > 1 mm.
+- Bề dày nam châm hướng kính dương:
+  (Dsout - 4*g - Dsin)/2 - (pm_bridin + pm_bridout) > 0.
+- Góc trong: slot_ang_axin < 180deg/Ns.
+- Góc ngoài: slot_ang_axout < 360deg/Ns.
+- Chống dây chèn split tooth phía trong:
+  Dsin/2 - (Dsin/2 - slot_d_axin - slot_tipin)/cos(slot_ang_axin) > slot_d_axin.
+- Chống chồng nam châm với dự trữ0.1 mm trên biến d_pm:
+  (Dsin + 2*g)*tan(180deg/p) - d_pm > 0.1 mm.
+  Dự trữ này tính trên tham số d_pm, không phải khoảng cách CAD đo trực tiếp.
+- Khi tính cos/tan bằng thư viện toán, đổi độ sang radian.
 
-   The inner-stator yoke thickness must remain strictly positive.
+CÁC GIÁ TRỊ VÀ ĐẠI LƯỢNG CẦN KIỂM TRA KHI XÂY DỰNG LẠI
 
-2) Positive inner winding-space constraint
-
-       (Dsin/2 - slot_d_axin - slot_tipin) - (Dshaft/2 + sta_yoke_thickin) > 1 mm
-
-   Updated by the user on 2026-11-14: inner winding space must also be strictly greater than 1 mm. Current constraint set version 4 requires both inner and outer winding spaces > 1 mm. Python inner_winding_mm and outer_winding_mm represent the surplus above 1 mm; reject margins <= 0.
-   Confirmed by the user on 2026-11-13: 'sta_yoke' in the original note means 'sta_yoke_thickin', the inner-stator yoke thickness. It is not a separate variable.
-
-3) Positive permanent-magnet thickness constraint
-
-       (Dsout - 4*g - Dsin)/2 - (pm_bridin + pm_bridout) > 0
-
-   This constraint is intended to keep the magnet thickness strictly positive.
-
-4) Inner axial slot depth / slot-tip coupling
-
-   When slot_d_axin increases by 1 unit, slot_tipin must automatically decrease by 1 unit, similar to Constraint 1. Enforce:
-
-       slot_tipin > 0
-       slot_d_axin > 0
-
-5) Inner slot-angle constraint
-
-       slot_ang_axin < 360deg/2/Ns
-
-5a) Inner winding / split-tooth clearance (added by the user after video review)
-
-       Dsin/2 - (Dsin/2 - slot_d_axin - slot_tipin)/cos(slot_ang_axin) > slot_d_axin
-
-   This prevents the inner winding from intruding into the split tooth. slot_ang_axin is in degrees; Python must convert it to radians before calling math.cos. Enforce the strict positive margin Dsin/2 - (Dsin/2 - slot_d_axin - slot_tipin)/cos(slot_ang_axin) - slot_d_axin. This is constraint set version 2; earlier geometry validation results did not include this condition. Keep the agreed variable bounds unchanged.
-
-6) Positive outer winding-space constraint
-
-       (Dsout_out/2 - sta_yoke_thickout) - (Dsout/2 + slot_d_axout + slot_tipout) > 1 mm
-
-   Updated by the user on 2026-11-14 after point 8 produced null outer winding bodies: require strictly more than 1 mm, not merely positive space. Constraint set version 3. The Python outer_winding_mm margin subtracts this 1 mm threshold; reject margins <= 0.
-
-7) Outer slot-angle constraint
-
-       slot_ang_axout < 360deg/Ns
-
-   Note: This differs from the inner slot-angle expression because the inner and outer geometry were parameterized differently.
-
-8) Outer axial slot depth / slot-tip coupling
-
-   When slot_d_axout increases by 1 unit, slot_tipout must automatically decrease by 1 unit, similar to Constraint 1. Enforce:
-
-       slot_tipout > 0
-       slot_d_axout > 0
-
-9) Permanent-magnet overlap constraint
-
-       arctan(d_pm/(Dsin + 2*g)) < 360deg/2/p
-
-   This constraint is intended to prevent magnets from becoming so wide that adjacent magnets overlap.
-
-10) Current density
-
-       J = 5.5
-
-   The current-density calculation is documented in readme.md. The RMS current, I_rms, must be adjusted automatically according to that calculation.
-
-11) Fixed parameters
-
-       kfill = 0.3
-
-   Updated by the user on 2026-11-15: use kfill = 0.3 for the new 800-call campaign. Override the saved template value before each evaluation and recalculate I_rms from actual areas with J <= 5.5 A/mm2. Keep earlier kfill=0.4 results separate. Do not change kfill within a campaign. All parameters not explicitly identified for optimization should remain fixed.
-
-2. AGREED OPTIMIZATION VARIABLES AND BOUNDS (13 TOTAL)
-
-The user has confirmed the following bounds. These supersede the earlier provisional ranges and capitalization in the original notes. Geometry DOE checks model validity within this agreed domain; it does not reopen or automatically change these bounds.
-
-  Model variable         Lower       Upper       Unit
-  k_w_axin               0.10        0.90        dimensionless
-  k_w_axout              0.05        0.48        dimensionless
-  slot_thickin           3           12          mm
-  slot_thickout          5           28          mm
-  sta_yoke_thickout      3           10          mm
-  Dshaft                 16          36          mm
-  Dsin                   60          90          mm
-  Dsout                  80          114         mm
-  slot_d_axin            1           7.1         mm
-  slot_d_axout           1           6.5         mm
-  slot_ang_axin          5           29          deg
-  slot_ang_axout         20          59          deg
-  d_pm                   1           8           mm
-
-All coupling relations and geometric inequalities still apply. The Cartesian product contains invalid combinations; reject them before FEA. The earlier 0-100 suggestion is not used.
-
-Workflow: 100 geometry-only DOE points in the agreed domain, inspect any CAD errors, then Direct NSGA-II with real FEA to obtain an independent Pareto baseline. ANN studies follow later. The two modes are selected manually in the same Run entry; geometry checks never automatically start FEA.
-
-3. EXISTING ANSYS AUTOMATION AND OUTPUT CHECKS
-
-- Mesh policy correction after the first NSGA-II launch: all five workers were observed to contain CylindricalGap1 again despite initialized=true. Check actual mesh operations after geometry/current updates and Save, and remove only CylindricalGap1 when present. Verify its absence before solve. The historical one-time-only assumption below is superseded by this presence-based check; it is not a request to delete other mesh operations or geometry.
-
-- command_base.py contains recorded Ansys operations.
-- mesh_delete.py records the required one-time cleanup after creating a new model: oDesign.GetModule("MeshSetup").DeleteOp(["CylindricalGap1"]). The user confirmed that this removes an automatically generated mesh operation, not geometry. Apply once during model initialization, before its first solve; do not repeat for each parameter update on the same model. Use the actual working-copy project, not the recorder's hardcoded project name 'base_backup'. After adding this cleanup, one baseline and five distinct pilot designs solved successfully on 2026-11-13; the five variations ran concurrently as separate projects in one AEDT session. See inspection/vernier_pilot_20261113/REPORT.md. These successful points do not validate the entire proposed domain.
-- The currently recorded automation has been tested for changing variables and running a simulation.
-- More recorded commands may be needed to export simulation results. Please tell me exactly which actions to record if a required command is missing.
-- Please check my power-factor (PF) and efficiency calculation formulas.
-- Confirmed by the user on 2026-11-13: retain the additional loss allowance of 0.02 * Pout in the existing efficiency denominator, Pout * 1.02 + p_cu + CoreLoss + SolidLoss. Treat this as an assumed excess-loss allowance, not specifically as mechanical loss or as a separately simulated loss. This confirmation does not resolve the averaging-window check below.
-- In my existing results, the relevant table covers two cycles, whereas efficiency is calculated using only the last cycle. Check whether the averaging/integration windows and formulas are consistent.
-- Working proposal following the user's preference on 2026-11-13: retain the existing instantaneous eff expression and use its mean over the last complete electrical cycle for the algorithm pilot. Use the same time window for Torque and PF. This mean of instantaneous efficiency is distinct from the ratio of mean powers; do not claim they are mathematically identical or equally close for all designs.
-
-4. ITEMS TO CONFIRM BEFORE AUTOMATING A LARGE DESIGN SWEEP
-
-These are unresolved points in the original notes, not additional constraints:
-
-- Check exact Ansys parameter names and capitalization for all variables, including K_w_axin/k_w_axout and Sta_yoke_thickout/sta_yoke_thickout.
-- Confirm how dependent variables are updated when Dshaft, slot_d_axin, or slot_d_axout changes, including their original reference values.
-- Confirm the units and angle conventions for the expressions containing 360deg and arctan; preserve the source expressions until verified.
-- Check geometry validity in the agreed 13-variable domain; do not default to 0-100 or silently change the bounds.
-- Read readme.md to reproduce the J = 5.5 calculation and automatic I_rms update.
-- Verify PF and efficiency calculations using consistent, explicitly documented time windows.
-
-Please preserve the original constraints and model behavior. Flag ambiguities for discussion rather than inventing formulas or bounds.
+- Model hiện tại: Ns=6, p=28, g=0.7 mm, Dsout_out=138 mm; đối chiếu giá trị thực trong model trước khi dùng.
+- kfill=0.3; mật độ dòng RMS mỗi stator không vượt5.5 A/mm².
+- Ain = 2*Area(coil_in_1) + Area(Circle12).
+- Aout = 2*Area(coil_out_1) + Area(Circle10_Separate1).
+- Irms = min(5.5*kfill*Ain/(2*Ntc), 5.5*kfill*Aout/(2*Ntc_out)); Ip = sqrt(2)*Irms. Diện tích tính bằng mm²; phải đọc lại diện tích CAD sau khi thay hình học.
+- Điều kiện vận hành đã dùng: torque trung bình >0 Nm; 0<PF<1; 0<eff<1. Ngưỡng torque>2 Nm không thuộc cấu hình miền mới đã chốt.
+- PF đã dùng: mean(Pin)/(3*RMS(Ua)*RMS(Ia)); phải kiểm tra nhất quán cửa sổ, quy ước điện áp/dòng và đơn vị khi triển khai lại.
+- Ghi chú efficiency cần chuyên gia rà soát: trước đây dùng mean(eff(t)), eff(t)=Pout(t)/(1.02*Pout(t)+p_cu(t)+CoreLoss(t)+SolidLoss(t)). Mean của tỷ số không bằng tỷ số các công suất trung bình; không mang nguyên định nghĩa nhãn sang nghiên cứu mới mà chưa kiểm tra. Hệ số2% là excess-loss allowance giả định, không phải tổn hao FEA tính riêng.

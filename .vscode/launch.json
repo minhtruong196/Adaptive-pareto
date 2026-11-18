@@ -1,25 +1,48 @@
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Vernier (MODE in file, 5 workers)",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/code/run_vernier_nsga2.py",
-      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true
-    },
-    {
-      "name": "Run NSGA-II (parallel)",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/code/nsga2_motorcad.py",
-      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true
-    }
-  ]
+    "version":  "0.2.0",
+    "configurations":  [
+                           {
+                               "name":  "Vernier GGLL300 - FEA (TXT algorithm)",
+                               "type":  "debugpy",
+                               "request":  "launch",
+                               "program":  "${workspaceFolder}/code/run_vernier_adaptive_ggll.py",
+                               "python":  "${workspaceFolder}/.venv/Scripts/python.exe",
+                               "cwd":  "${workspaceFolder}",
+                               "console":  "integratedTerminal",
+                               "justMyCode":  true
+                           },
+                           {
+                               "name":  "Vernier static ANN300 - FEA",
+                               "type":  "debugpy",
+                               "request":  "launch",
+                               "program":  "${workspaceFolder}/code/run_vernier_ann.py",
+                               "python":  "${workspaceFolder}/.venv/Scripts/python.exe",
+                               "cwd":  "${workspaceFolder}",
+                               "console":  "integratedTerminal",
+                               "justMyCode":  true
+                           },
+                           {
+                               "name":  "Vernier GGLL300 - DRY RUN (no Ansys)",
+                               "type":  "debugpy",
+                               "request":  "launch",
+                               "program":  "${workspaceFolder}/code/run_vernier_adaptive_ggll.py",
+                               "python":  "${workspaceFolder}/.venv/Scripts/python.exe",
+                               "cwd":  "${workspaceFolder}",
+                               "console":  "integratedTerminal",
+                               "justMyCode":  true,
+                               "args":  [
+                                            "--dry-run"
+                                        ]
+                           },
+                           {
+                               "name":  "Run NSGA-II (parallel)",
+                               "type":  "debugpy",
+                               "request":  "launch",
+                               "program":  "${workspaceFolder}/code/nsga2_motorcad.py",
+                               "python":  "${workspaceFolder}/.venv/Scripts/python.exe",
+                               "cwd":  "${workspaceFolder}",
+                               "console":  "integratedTerminal",
+                               "justMyCode":  true
+                           }
+                       ]
 }

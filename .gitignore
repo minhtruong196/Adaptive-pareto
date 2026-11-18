@@ -20,9 +20,21 @@ __pycache__/
 # Runtime writer locks.
 *.lock
 
+# Simulation bulk artifacts inside run folders: keep summaries/reports only.
+/runs/**/evaluations.sqlite
+/runs/**/*.xlsx
+/runs/**/*.dill
+/runs/**/cv*/
+/runs/**/models/
+/runs/**/repair_backup_*/
+# Worker pools are machine-local (absolute .aedt paths).
+/runs/**_workers_*/
+
 # Local credentials and editor/OS scratch files.
 .env
 .env.*
 !.env.example
 Thumbs.db
 .DS_Store
+
+/Verinier Ansys/base_half.aedt

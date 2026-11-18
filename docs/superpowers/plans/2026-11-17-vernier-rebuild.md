@@ -1,0 +1,47 @@
+# Vernier rebuild: TXT-authoritative GGLL and static baseline
+
+**Latest user instruction: plain Adam only.** Remove weight decay and CosineAnnealingLR from the shared Vernier trainer. Use Adam lr0.003 fixed, weight_decay0, schedulerNone in stage fits, CV folds and Final Merge. Retain all500 epochs, checkpoint floor300, data allocation, DOE/verification order, bounds and FEA code. Trainer artifact version2 prevents reuse of earlier optimizer checkpoints; historical v3 dry-runs below used the superseded optimizer settings and are not verification of this new training configuration.
+
+**Plain-Adam verification:**42 Vernier offline tests pass, including actual final-weight equality to an independent constant-lr Adam fit without weight decay in stage/merged modes. A fresh full300-slot synthetic GGLL run in a temporary folder completed with210 Train/60 Val/30 final and0 actual solver calls. Every stage, all5 CV folds and the merged model recorded500 epochs, learning_rate0.003 throughout, weight_decay0 and schedulerNone. Temporary synthetic artifacts were cleaned by TemporaryDirectory; historical workspace results were not changed. Source checksum remains `ab2f13c73247f915ff30553df27778f0c1f0eb95df09409a77ac80482abbb106`.
+
+**Audit correction, v3:** preserve old narrow220 sampling, recovered from Git tree `c5e35e23884c1867c7b7d9c0c6afb66a7209bd0f` (adaptive `733602e`, ANN `4ff5076`, model `ad15562`, adapter `6566a17`). Initial uses the old filtered-LHS batches; G/L select one feasible point from each separately seeded32-point batch and cycle local boxes. Restore8-decimal deduplication and NSGA initial seed+101. Guidance corrects checked predictions as before, with the explicitly requested addition of valid Val; do not union all historical Train DOE into guidance. Reporting archive still includes all valid real FEA. New protocol `txt_legacy_sampling_val_70_20_10_v3`, output folders `vernier_{adaptive,static}_narrow_300_txt_v3`. Earlier coherent-batch-LHS and Train+Val-guidance statements below describe superseded code. Budget/Train/Val/ANN/CV/merge/final30 and physical FEA code are unchanged by this correction. This is a correction of the audited sampling/guidance drift, not a claim that every line matches the deleted runner; current Pareto-only selection, HV scales and interruption safeguards remain declared in README.
+
+**Verified v3:**81 offline unit tests pass. New regression tests first failed against v2 and now match the recovered old Initial/G/L sampling, NSGA seed offset, and checked-prediction guidance with Val and without unrelated historical Train. Both full default500-epoch/100-generation synthetic runs completed300 slots with210 Train/60 Val/30 final, CV5, merge270 at epoch500 and0 physical solver calls. Adaptive stage fits70/100/135/170/205 with20/30/40/50/60 Val. Source base_half SHA256 remains `ab2f13c73247f915ff30553df27778f0c1f0eb95df09409a77ac80482abbb106`; TXT and recorder contents match Git. No real v3 campaign folder or worker pool has been created. No live FEA equivalence/performance is claimed.
+
+**Latest user ruling supersedes verify-first wording below:** research TXT sections3/6 are authoritative. Initial DOE/fit/P0, then each G/L executes DOE/FEA/fit/Pareto/verify5/corrected guidance. Verification feeds fitting only next stage; after L2 fit205 +last5 verification +Val60 merge270. Current protocol tag `txt_doe_fit_verify_70_20_10_v2`; older verify-first dry artifacts preserved separately, not scientific results. See README for corrected table. No actual FEA has run under either rebuild version.
+
+User requests implementation now, no further design discussion. Do not launch Ansys. Keep PMSM/Viennet, research TXT and recorded Ansys commands unchanged. Move base_half back to `inspection/vernier_pilot_20261113/work/test_point/base_half.aedt` byte-identically.
+
+## Binding protocol
+
+Default300 evaluations, no refill; count actual solver starts separately. Largest-remainder70/20/10 gives210 Train,60 Val,30 final. GGLL pool270: Initial90 (70T/20V), each G/G/L/L45 consists of DOE40 (30T/10V), one fit/search, then verify5 (Train). Stage fits70/100/135/170/205 with Val20/30/40/50/60. After each verification the Train archive has105/140/175/210; those new checks only enter the next fit. After last L2:205+5 checks+60Val merge270, final30. Failed slots remain failed; no label fabrication, refill, terminal retry or changing historic roles. Existing checks reused in guidance, never double-charged. For other budgets e.g.222/111 allocate integer quotas deterministically preserving sum; reject too-small allocations.
+
+Preserve research TXT mechanism: guidance -> G min/max box or L four objective-space groups padded1% -> geometry-feasible DOE -> FEA -> accumulate Train and fit once -> NSGA-II predicted Pareto -> extremes+maximin verification5 -> corrected hybrid Pareto for the next stage (actual FEA replaces checked values; invalid removed; actual Train+Val archive included). Global padding0/exploration0. Predicted-only points never reported as real archive. No fallback to dominated ranks when too few Pareto candidates; fail clearly before extra FEA.
+
+Static baseline: pool270 LHS210T/60V, one stage model, same offline validation/CV/final merge/final30. Do not reuse deleted historical results. Both runners default seed17, five worker clones, torque>0, narrow13 bounds, kfill0.3, J<=5.5. Worker source/model identity locked.
+
+MLP Tanh32x32, three jointly standardized outputs (scaler fit on Train only); input fixed narrow bounds. Plain Adam lr0.003 fixed, no weight decay and no scheduler. Always500 epochs; stage weights chosen by Val loss only epochs300..500 inclusive. No fixed8 validation. Save premerge Val MAE/RMSE/MAPE/R2/Bias. Five-fold CV on valid Train+Val, own scaler in each fold,500 epochs final weights, no outer-fold checkpoint selection; save OOF and mean/sampleSD. Final Merge all valid pool, own output scaler,500th epoch. Final NSGA-II selects30 diverse unseen Pareto candidates -> FEA, never train on final. Global search remains within default narrow bounds.
+
+## Modules / interfaces
+
+- `vernier_model.py`, `vernier_optimize.py`: actual FEA adapter reconstructed from audited Git low-level routines, NOT old optimization runners. Interface `run(settings,plan_override)` with growing points plan, cumulative ledger and hard limit; `Ledger`, `run_lock`, `export_results`, `pareto_rows`, `export_pareto`; geometry `BOUNDS, margins, source_variables, make_plan, atomic_json, digest, model_identity`. No unapproved Direct NSGA-II runner. SQLite point IDs one-based, rows contain point/status/data. Interrupted started attempts terminal, never auto-retry; source immutable. Source configuration identity ignores saved varying parameter values but anchors/fixed vars/revision must match.
+- `vernier_mlp.py`: `fit_model(train_rows,val_rows,bounds,folder,seed=17,epochs=500,min_checkpoint_epoch=300,merged=False)` returns model, `predict(model,x)`, `metrics(actual,predicted)` including signed bias/counts, `cross_validate(rows,bounds,folder,seed=17,folds=5,epochs=500)` report/OOF. No FEA imports/calls. Optional shortened epochs only in unit tests/dry-run explicitly labeled synthetic; real defaults fixed500.
+- `vernier_protocol.py`: budgets, roles, feasible unique DOE, surrogate Pareto search, extremes/maximin, corrected guide, G/L sampling.
+- `vernier_campaign.py`: frozen plans/roles/checkpoints, growing SQLite adapter prefix, resume, one lock, static/GGLL sequence, validation/CV/merge/test, true FEA HV reports.
+- `run_vernier_ann.py`, `run_vernier_adaptive_ggll.py`: clear VSCode Run defaults300; CLI `--dry-run` synthetic only, `--evaluations N`; no FEA on import, no autonomous launch.
+
+## Tasks
+
+- [x] Low-level FEA adapter plus offline geometry/locking/budget/source tests.
+- [x] MLP module plus tests for Train-only normalization, epoch floor, CV exclusion, final500.
+- [x] Protocol/controller tests before implementation; budgets300/222/111, verify-before-DOE and immutable Val/test roles, failures and resume no extra calls.
+- [x] Implement and run full synthetic300 dry-run for GGLL and static, inspect70/20 ->105/30 ->140/40 ->175/50 ->210/60 ->CV/merge270 ->final30, plus failure/resume tests.
+- [x] Fresh review, full tests, source/model hashes and documentation/VSCode checks. Only user starts FEA.
+
+Verification:78 tests pass in project .venv. Both final default500-epoch/100-generation dry-runs completed300 synthetic slots, CV5 and merge270, final30 and0 actual solver calls. Review findings fixed: coherent batch LHS; checksummed role/state/front/model artifacts with prediction/geometry validation; raw source hash treated as provenance in both campaign and adapter plan compatibility. Research TXT and recorded commands unchanged. Actual FEA output directories and worker clones have not been created/launched.
+
+## Rulings
+
+- Isolated new Vernier modules in existing workspace; no branch reset or changing PMSM files because workspace contains user changes and model data.
+- Latest user instruction makes original research TXT authoritative. Corrected the mistaken verify-first implementation; no verification of P0 before G1 DOE. TXT unchanged; only Val/training/reporting layers and explicit approved budget added.
+- HV uses only actual status-ok outputs, reference0 and fixed reporting scales10Nm/1PF/100eff% for both new methods, declared before FEA; no deleted Direct calibration or predicted HV claims. Dry-run HV explicitly synthetic, not motor evidence.

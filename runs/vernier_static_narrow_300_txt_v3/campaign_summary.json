@@ -1,0 +1,113 @@
+{
+  "method": "static",
+  "synthetic": false,
+  "evaluation_slots": 300,
+  "actual_solver_calls": 300,
+  "budget": {
+    "total": 300,
+    "train": 210,
+    "val": 60,
+    "test": 30,
+    "pool": 270,
+    "stages": [
+      {
+        "name": "Initial",
+        "kind": "initial",
+        "verify": 0,
+        "doe_train": 210,
+        "val": 60,
+        "cumulative_train": 210,
+        "cumulative_val": 60
+      }
+    ]
+  },
+  "roles_planned": {
+    "train": 210,
+    "val": 60,
+    "test": 30
+  },
+  "roles_valid": {
+    "train": 207,
+    "val": 59,
+    "test": 30
+  },
+  "statuses": {
+    "ok": 296,
+    "solve_failed": 4
+  },
+  "pool_valid": 266,
+  "final_outcomes": {
+    "planned": 30,
+    "statuses": {
+      "ok": 30
+    }
+  },
+  "final_metrics": {
+    "n": 30,
+    "objectives": {
+      "average_torque_nm": {
+        "n": 30,
+        "mae": 3.5136466636993235,
+        "rmse": 3.6038995044566042,
+        "mape": 81.46815389369485,
+        "r2": -2.131314722601897,
+        "bias": 3.5136466636993235,
+        "mean_relative_error_pct": 81.46815389369485,
+        "mean_signed_error": 3.5136466636993235,
+        "overpredicted_n": 30,
+        "underpredicted_n": 0,
+        "zero_actual_n": 0,
+        "max_relative_error_pct": 140.8992862293216,
+        "max_absolute_error": 4.742004577212408
+      },
+      "power_factor": {
+        "n": 30,
+        "mae": 0.03409314156347059,
+        "rmse": 0.04586331709774239,
+        "mape": 4.593015036365517,
+        "r2": 0.813668474244324,
+        "bias": 0.030672620299600977,
+        "mean_relative_error_pct": 4.593015036365517,
+        "mean_signed_error": 0.030672620299600977,
+        "overpredicted_n": 23,
+        "underpredicted_n": 7,
+        "zero_actual_n": 0,
+        "max_relative_error_pct": 14.645210410165605,
+        "max_absolute_error": 0.09439144701056468
+      },
+      "efficiency_pct": {
+        "n": 30,
+        "mae": 5.972033600914869,
+        "rmse": 6.0103296520592835,
+        "mape": 6.659736927273221,
+        "r2": -332.5567281171136,
+        "bias": 5.972033600914869,
+        "mean_relative_error_pct": 6.659736927273221,
+        "mean_signed_error": 5.972033600914869,
+        "overpredicted_n": 30,
+        "underpredicted_n": 0,
+        "zero_actual_n": 0,
+        "max_relative_error_pct": 7.796725672681173,
+        "max_absolute_error": 6.990138434336643
+      }
+    }
+  },
+  "hv": {
+    "scale": {
+      "average_torque_nm": 10.0,
+      "power_factor": 1.0,
+      "efficiency_pct": 100.0
+    },
+    "reference": [
+      0,
+      0,
+      0
+    ],
+    "pool": 0.6386578830384363,
+    "final_only": 0.6811421500963502,
+    "archive": 0.6939659313615062,
+    "final_gain": 0.0553080483230699
+  },
+  "final_never_trained": true,
+  "note": "Final points are optimization-selected verification, not a random global test. No failure refill."
+}
