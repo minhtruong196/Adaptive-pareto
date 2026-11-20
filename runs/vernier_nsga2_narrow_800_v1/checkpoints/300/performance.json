@@ -1,0 +1,31 @@
+{
+  "method": "nsga2",
+  "synthetic": false,
+  "evaluation_slots": 300,
+  "actual_solver_calls": 300,
+  "valid_designs": 294,
+  "pareto_designs": 25,
+  "statuses": {
+    "ok": 294,
+    "solve_failed": 6
+  },
+  "hv": {
+    "scale": {
+      "average_torque_nm": 10.0,
+      "power_factor": 1.0,
+      "efficiency_pct": 100.0
+    },
+    "reference": [
+      0,
+      0,
+      0
+    ],
+    "archive": 0.7443208504437248
+  },
+  "best_objectives": {
+    "average_torque_nm": 10.431151668672623,
+    "power_factor": 0.8359493789537283,
+    "efficiency_pct": 91.14815521303237
+  },
+  "note": "Actual valid FEA archive only. Failed slots consumed; no retry/refill."
+}

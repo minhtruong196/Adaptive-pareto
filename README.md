@@ -1,5 +1,70 @@
 # PMSM / Vennet và ghi chú khởi động lại Vernier
 
+## Kết quả Vernier — NSGA-II trực tiếp, ANN tĩnh và Adaptive GGLL
+
+Cập nhật 20/11/2026. NSGA-II trực tiếp (seed 17, population 40) hoàn tất 20 thế hệ với **800 lần gọi Ansys**, gồm **783 kết quả hợp lệ**, 17 lỗi solver và **102 thiết kế Pareto** trong tập kết quả tích lũy. Các cực trị FEA ở mốc 800 là mô-men **11,234 Nm** (điểm 638), PF **0,9265** (điểm 790) và hiệu suất **91,360%** (điểm 784). [Tổng kết NSGA-II](runs/vernier_nsga2_narrow_800_v1/performance.json) · [Pareto FEA 800](runs/vernier_nsga2_narrow_800_v1/pareto.csv)
+
+### Dự đoán trên Pareto cuối và kiểm chứng Ansys
+
+Với ANN tĩnh và Adaptive GGLL, mỗi ô lấy ứng viên có **dự đoán cao nhất cho mục tiêu đó trong 30 thiết kế được chọn từ Pareto dự đoán cuối**, rồi ghi kết quả Ansys của chính thiết kế đó sau mũi tên. Với NSGA-II trực tiếp, mỗi ô là cực trị FEA trong toàn bộ kết quả hợp lệ đến mốc tương ứng. Các hàng có thể thuộc những thiết kế khác nhau.
+
+| Mục tiêu | ANN tĩnh: dự đoán → FEA cùng điểm | Adaptive GGLL: dự đoán → FEA cùng điểm | NSGA-II 300, FEA | NSGA-II 800, FEA |
+|---|---:|---:|---:|---:|
+| Mô-men (Nm) | 11,235 → 9,006 | 10,372 → 8,798 | 10,431 | 11,234 |
+| PF | 0,9688 → 0,9431 | 0,9458 → 0,9460 | 0,8359 | 0,9265 |
+| Hiệu suất (%) | 96,914 → 90,196 | 91,633 → 90,960 | 91,148 | 91,360 |
+
+Ví dụ, Adaptive dự đoán điểm 271 đạt mô-men 10,372 Nm và Ansys kiểm chứng được 8,798 Nm. Trong 30 thiết kế cuối của Adaptive, mô-men FEA cao nhất là 9,677 Nm ở điểm 283. Giá trị 9,927 Nm thuộc điểm 249 trong pool trước bước kiểm chứng cuối. [Dữ liệu ANN tĩnh](runs/vernier_static_narrow_300_txt_v3/state.json) · [Dữ liệu Adaptive](runs/vernier_adaptive_narrow_300_txt_v3/state.json) · [Pareto FEA NSGA-II 300](runs/vernier_nsga2_narrow_800_v1/checkpoints/300/pareto.csv)
+
+### Hypervolume theo ngân sách FEA
+
+HV tính trên toàn bộ kết quả FEA hợp lệ tích lũy đến từng mốc, với cùng chuẩn hóa mô-men/10, PF/1, hiệu suất/100 và điểm tham chiếu (0, 0, 0). Mốc 270 lấy pool trước bước kiểm chứng của hai phương pháp surrogate. Mốc 300 tính thêm 30 lượt xác nhận thiết kế cuối. Với NSGA-II, cả hai mốc lấy đúng số lần gọi Ansys đầu tiên.
+
+| Số lần gọi Ansys | ANN tĩnh | Adaptive GGLL | NSGA-II trực tiếp |
+|---:|---:|---:|---:|
+| 270 | 0,638658 | 0,729911 | **0,738903** |
+| 300 | 0,693966 | **0,760458** | 0,744321 |
+| 800 | — | — | **0,856902** |
+
+NSGA-II dẫn về HV ở mốc 270. Adaptive dẫn ở cùng ngân sách 300, cao hơn NSGA-II khoảng 2,17%. Trong lượt này, NSGA-II lần đầu đạt mức HV của Adaptive 300 ở lần gọi solver **338**. Đến 800 FEA, HV của NSGA-II cao hơn Adaptive 300 khoảng **12,7%**, với ngân sách 800 so với 300. HV NSGA-II tăng từ 0,852742 ở mốc 700 lên 0,856902 ở mốc 800. Kết quả dựa trên một seed cho mỗi quy trình. [Đối chiếu cùng ngân sách 300](runs/vernier_nsga2_narrow_800_v1/checkpoints/300/comparison.json)
+
+## Vernier NSGA-II trực tiếp — ngân sách 800, báo cáo tại 300
+
+[nsga2_vernier.py](code/nsga2_vernier.py) dùng cùng 13 biến liên tục, bounds,
+model nguồn, kfill0,3, ràng buộc hình học và bộ giải FEA với ANN/adaptive.
+Bấm Run trong VS Code hoặc chạy:
+
+```powershell
+.\.venv\Scripts\python.exe code\nsga2_vernier.py
+# Tiếp tục cùng thư mục/cấu hình sau khi dừng:
+.\.venv\Scripts\python.exe code\nsga2_vernier.py --resume
+# Chỉ kiểm tra bằng dữ liệu giả, không mở Ansys:
+.\.venv\Scripts\python.exe code\nsga2_vernier.py --dry-run
+```
+
+Mặc định population40, seed17, SBX(prob0,9/eta15), PM(eta20), 5 worker,
+800 điểm khác nhau; `--workers`, `--population`, `--budget`, `--seed`,
+`--run-dir` cho phép đổi cấu hình. `--generations` là giới hạn dừng sớm tùy chọn;
+mặc định chạy đến đủ ngân sách điểm. Điểm khởi tạo dùng LHS lọc khả thi;
+offspring vi phạm hình học được lấy lại trong bounds trước FEA. Điểm FEA lỗi
+vẫn tiêu một suất và không được chạy bù, giống giao thức ANN/adaptive.
+Đếm số suất và số lần thực sự khởi động solver riêng; số lần solver luôn ≤800.
+
+Kết quả thật: `runs/vernier_nsga2_narrow_800_v1/`; dry-run có hậu tố
+`_dry_run`. Khi đủ đúng300 suất, chương trình lưu `checkpoints/300/` rồi tiếp
+tục800; không chọn lọc GA ở giữa thế hệ nên mốc báo cáo không đổi thuật toán.
+Thư mục mốc chứa `results.csv`, `pareto.csv`, `pareto.json`, `performance.json`
+và `comparison.json` đối chiếu với các chiến dịch ANN/adaptive300 tương thích.
+Ở thư mục gốc có `results.xlsx` (kèm waveform), `results.csv`, Pareto,
+`performance.json`, `comparison.json`, `nsga2_summary.json` và checkpoint resume.
+
+So sánh **HV archive FEA hợp lệ** với cùng scale10 Nm/1 PF/100% và
+reference(0,0,0); số Pareto và cực trị từng mục tiêu được báo riêng. So sánh
+300 với300 cần kiểm tra `actual_solver_calls` bằng nhau; nếu có lỗi trước solve,
+300 suất có thể chưa phải300 lần solver. NSGA-II800 so với ANN/adaptive300 là
+đối chiếu chất lượng theo ngân sách khác nhau. Các cực trị từng mục tiêu có thể
+thuộc các thiết kế khác nhau. Không dùng sai số dự đoán ANN để chấm NSGA-II.
+
 Cập nhật: 18/11/2026.
 
 ## So sánh FEA thật — ANN tĩnh300 và adaptive GGLL300
@@ -79,7 +144,9 @@ Chuẩn hóa Torque/10, PF/1, Efficiency/100; reference(0,0,0); chỉ dùng FEA 
 
 ANN tĩnh vẫn tìm được nghiệm có ích: final30 nâng HV archive từ0,638658 lên0,693966. Kho tĩnh có22 nghiệm Pareto FEA (17 từ final), adaptive có19 (15 từ final); nhiều điểm Pareto hơn không đồng nghĩa HV lớn hơn. Hai archive gồm số điểm hợp lệ khác nhau nhưng có cùng ngân sách300 FEA.
 
-**Nhận định:** trong cặp thực nghiệm hiện có, adaptive tạo archive FEA có HV cao hơn và khắc phục phần lớn sai số Torque/Efficiency tại các ứng viên tối ưu mà baseline tĩnh gặp phải. Kết quả ủng hộ việc bổ sung FEA theo vùng tìm kiếm. Chưa đủ nhiều seed để kết luận ưu thế ổn định; chưa tách riêng tác dụng của chiến lược DOE, verification giữa vòng và dữ liệu thích nghi. Hai bên cùng không dùng weight decay/scheduler nên đây không phải thí nghiệm đánh giá tác dụng của hai tùy chọn đó.
+**Nhận định:** trong cặp thực nghiệm hiện có, adaptive tạo archive FEA có HV cao hơn và khắc phục phần lớn sai số Torque/Efficiency tại các ứng viên tối ưu mà baseline tĩnh gặp phải. Kết quả ủng hộ việc bổ sung FEA theo vùng tìm kiếm. Chưa đủ nhiều seed để kết luận ưu thế ổn định; chưa tách riêng tác dụng của chiến lược DOE, verification giữa vòng và dữ liệu thích nghi.
+
+**Kiểm tra optimizer trên dữ liệu đã lưu:** huấn luyện lại trên 266 điểm hợp lệ của ANN tĩnh và 261 điểm hợp lệ của adaptive, chấm trên 30 thiết kế cuối đã kiểm chứng của từng lượt, qua 5 seed. Weight decay `1e-4` chỉ làm MAE thay đổi nhẹ. Cosine Annealing giảm MAE mô-men của ANN tĩnh từ 3,171 xuống 3,002 Nm nhưng tăng sai số PF và hiệu suất. Trong adaptive, cosine tăng MAE cả ba mục tiêu. Giữ cấu hình Adam với learning rate cố định 0,003 cho hai quy trình. Phép thử dùng lại dữ liệu FEA và chỉ đánh giá sai số trên các thiết kế đã chọn. [Kết quả theo seed và thiết kế](inspection/vernier_optimizer_offline_final30.json)
 
 **Nguồn ANN tĩnh:** [tổng kết](runs/vernier_static_narrow_300_txt_v3/campaign_summary.json), [Val trước gộp](runs/vernier_static_narrow_300_txt_v3/validation_before_merge.json), [CV5](runs/vernier_static_narrow_300_txt_v3/cv_report.json), [kết quả từng điểm](runs/vernier_static_narrow_300_txt_v3/campaign_results.csv), [Pareto FEA](runs/vernier_static_narrow_300_txt_v3/fea_pareto.json), [trạng thái](runs/vernier_static_narrow_300_txt_v3/state.json), [mạng cuối và scaler](runs/vernier_static_narrow_300_txt_v3/models/merged/), [mạng trước gộp](runs/vernier_static_narrow_300_txt_v3/models/Initial/). Nguồn adaptive được liên kết trong phần chi tiết ngay dưới.
 
@@ -167,7 +234,7 @@ HV chỉ tính FEA hợp lệ, chuẩn hóa Torque/10, PF/1, Efficiency/100, ref
 
 - Final30 đạt Torque MAE0,3488 Nm, thấp hơn con số lịch sử1,0473 Nm trong bài học bên dưới. Tuy nhiên, tập kiểm tra30 điểm mới khác40 điểm cũ, dữ liệu train và ngân sách cũng khác: đây không phải đối chứng để định lượng tác dụng từng sửa đổi.
 - Cần đánh giá việc khoanh G1 từ Pareto P0 chưa được verify, khi verification G1/G2 đang quá lạc quan; cơ chế dùng Val thật chung với dự đoán để dẫn hướng; và việc dùng CV trên kho thích nghi.
-- Đã có baseline tĩnh300 cùng điều kiện để so sánh ở đầu README; còn thiếu nhiều seed để kết luận lợi thế GGLL ổn định. Không kết luận việc bỏ weight decay/scheduler tốt hơn hay kém hơn vì chưa có đối chứng.
+- Kết quả ANN tĩnh 300, NSGA-II trực tiếp và phép thử optimizer trên dữ liệu đã lưu được trình bày ở đầu README. Các chiến dịch FEA dùng một seed cho mỗi quy trình.
 - Lỗi resume từng phát sinh khi JSON đổi tuple bounds thành list. Đã sửa phép so sánh, sao lưu và cập nhật fingerprint tương thích;90 kết quả Initial/model/kế hoạch G1 được giữ. Kiểm tra cuối có300 attempts cho300 điểm, không lặp điểm.
 
 **Dữ liệu đối chiếu:** [tổng kết chiến dịch](runs/vernier_adaptive_narrow_300_txt_v3/campaign_summary.json), [Val trước gộp](runs/vernier_adaptive_narrow_300_txt_v3/validation_before_merge.json), [CV5](runs/vernier_adaptive_narrow_300_txt_v3/cv_report.json), [verification từng vòng](runs/vernier_adaptive_narrow_300_txt_v3/verification_reports.json), [kết quả từng điểm](runs/vernier_adaptive_narrow_300_txt_v3/campaign_results.csv), [Pareto FEA](runs/vernier_adaptive_narrow_300_txt_v3/fea_pareto.json), [trạng thái các vòng](runs/vernier_adaptive_narrow_300_txt_v3/state.json), [prediction ngoài fold](runs/vernier_adaptive_narrow_300_txt_v3/cv5/oof_predictions.csv). Checkpoint và đường học nằm trong `runs/vernier_adaptive_narrow_300_txt_v3/models/`.

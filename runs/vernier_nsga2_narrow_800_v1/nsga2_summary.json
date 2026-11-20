@@ -1,0 +1,7 @@
+{
+  "stop_reason": "budget",
+  "completed_generations": 20,
+  "evaluation_slots": 800,
+  "solver_attempts": 800,
+  "synthetic": false
+}

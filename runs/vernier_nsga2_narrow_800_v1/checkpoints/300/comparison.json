@@ -1,0 +1,26 @@
+{
+  "rows": [
+    {
+      "method": "nsga2",
+      "evaluation_slots": 300,
+      "actual_solver_calls": 300,
+      "valid_designs": 294,
+      "archive_hv": 0.7443208504437248
+    },
+    {
+      "method": "ann",
+      "evaluation_slots": 300,
+      "actual_solver_calls": 300,
+      "valid_designs": 296,
+      "archive_hv": 0.6939659313615062
+    },
+    {
+      "method": "adaptive",
+      "evaluation_slots": 300,
+      "actual_solver_calls": 300,
+      "valid_designs": 291,
+      "archive_hv": 0.760458261182851
+    }
+  ],
+  "note": "Compare archive HV at equal actual solver calls. NSGA-II800 vs baselines300 is a budget tradeoff."
+}

@@ -1,0 +1,10 @@
+{
+  "points": 800,
+  "solver_calls": 800,
+  "statuses": {
+    "ok": 783,
+    "solve_failed": 17
+  },
+  "efficiency": "time mean of eff(t), including 2% excess loss; final electrical cycle",
+  "voltage_constraint": false
+}
